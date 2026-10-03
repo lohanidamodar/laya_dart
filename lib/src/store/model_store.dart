@@ -48,7 +48,7 @@ class ModelStore {
   /// [client] performs the downloads (a default client is created and closed
   /// per [install] when omitted). [hubBase] replaces `https://huggingface.co`,
   /// for tests and mirrors. [token] is the Hugging Face token, defaulting to
-  /// the `HF_TOKEN` environment variable; it is sent as a bearer token to the
+  /// the `HF_TOKEN` entry of [environment] (default: the process environment); it is sent as a bearer token to the
   /// [hubBase] host only, never to a redirect target on another host. [pins]
   /// replaces the built-in pinned table, for tests.
   ModelStore(
@@ -56,10 +56,13 @@ class ModelStore {
     http.Client? client,
     Uri? hubBase,
     String? token,
+    Map<String, String>? environment,
     Map<String, List<PinnedFile>>? pins,
   }) : _client = client,
        hubBase = hubBase ?? Uri.parse('https://huggingface.co'),
-       _token = _nonEmpty(token) ?? _nonEmpty(Platform.environment['HF_TOKEN']),
+       _token =
+           _nonEmpty(token) ??
+           _nonEmpty((environment ?? Platform.environment)['HF_TOKEN']),
        _pins = pins ?? pinnedFiles;
 
   /// The directory holding one folder per checkpoint.
@@ -104,8 +107,9 @@ class ModelStore {
   String pathOf(String checkpoint, PinnedFile file) =>
       p.joinAll([root, checkpoint, ...file.path.split('/')]);
 
-  /// True when every file is present with the pinned size (the fast check used
-  /// at startup; [verify] hashes).
+  /// True when every file is present with the pinned size. This is the fast
+  /// check for startup: it never hashes, so a same-size corrupt file passes;
+  /// [verify] hashes.
   bool isInstalled(String checkpoint, {String variant = 'fp32'}) {
     for (final f in filesFor(checkpoint, variant: variant)) {
       final file = File(pathOf(checkpoint, f));
@@ -134,8 +138,9 @@ class ModelStore {
   /// Downloads the files [checkpoint] needs for [variant] and verifies each
   /// one's sha256.
   ///
-  /// A file already present with its pinned size is skipped (run [verify] to
-  /// hash it). Each download goes to `<path>.part`, resuming a partial one
+  /// A file already present with its pinned size is skipped without hashing, so
+  /// a same-size corrupt file survives (run [verify] to
+  /// catch it; `fetch` does). Each download goes to `<path>.part`, resuming a partial one
   /// with a `Range` request, and is renamed into place only once its sha256
   /// matches. Throws [StateError] naming the path on a mismatch, after
   /// deleting the bad `.part`; [HttpException] on a failed request.
@@ -185,6 +190,7 @@ class ModelStore {
         'run it again to resume',
       );
     }
+    if (!part.existsSync()) part.createSync(); // a zero-byte file
     if (await _sha256Of(part) != f.sha256) {
       part.deleteSync();
       throw StateError(

@@ -2,9 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
+import 'package:laya_server/laya_server.dart' show LayaEngine, PredictOptions;
+import 'package:laya_server/src/store/fetch_command.dart';
 import 'package:laya_server/src/store/model_store.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+
+import '../support/checkpoints.dart';
 
 const _repo = 'o/r';
 const _rev = 'abc123';
@@ -112,8 +116,13 @@ void main() {
     tmp.deleteSync(recursive: true);
   });
 
-  ModelStore store({String? token}) =>
-      ModelStore(tmp.path, hubBase: hub.base, token: token, pins: _pins);
+  ModelStore store({String? token, Map<String, String>? env}) => ModelStore(
+    tmp.path,
+    hubBase: hub.base,
+    token: token,
+    environment: env ?? const {},
+    pins: _pins,
+  );
 
   String local(String path) =>
       p.joinAll([tmp.path, 'english', ...path.split('/')]);
@@ -300,4 +309,193 @@ void main() {
       expect(await s.verify('english'), [target.path]);
     },
   );
+
+  test('HF_TOKEN from the environment is the fallback token', () async {
+    await store(env: {'HF_TOKEN': 'from-env'}).install('english');
+    expect(hub.seen.every((r) => r.auth == 'Bearer from-env'), isTrue);
+  });
+
+  test('an explicit token beats the environment', () async {
+    await store(
+      token: 'explicit',
+      env: {'HF_TOKEN': 'from-env'},
+    ).install('english');
+    expect(hub.seen.every((r) => r.auth == 'Bearer explicit'), isTrue);
+  });
+
+  group('fetch command', () {
+    Future<(int, String, String)> fetch(List<String> args) async {
+      final out = _Sink();
+      final err = _Sink();
+      final code = await runFetch(
+        args,
+        out: out,
+        err: err,
+        storeFor: (dir) =>
+            ModelStore(dir, hubBase: hub.base, environment: {}, pins: _pins),
+      );
+      return (code, out.text, err.text);
+    }
+
+    test('installs, verifies and exits 0', () async {
+      final (code, out, err) = await fetch(['--dir', tmp.path, 'english']);
+      expect(code, 0, reason: err);
+      expect(out, contains('english: installed and verified.'));
+      expect(File(local('onnx/model.onnx_data')).existsSync(), isTrue);
+    });
+
+    test('a same-size corrupt file fails verification and names it', () async {
+      final target = File(local('onnx/model.onnx_data'))
+        ..createSync(recursive: true);
+      final bytes = List<int>.of(_contents['onnx/model.onnx_data']!)..[7] ^= 1;
+      target.writeAsBytesSync(bytes);
+      final (code, _, err) = await fetch(['--dir', tmp.path, 'english']);
+      expect(code, 1);
+      expect(err, contains(target.path));
+      expect(err, contains('sha256'));
+    });
+
+    test('--no-verify skips the hash', () async {
+      File(local('onnx/model.onnx_data'))
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(
+          List<int>.of(_contents['onnx/model.onnx_data']!)..[7] ^= 1,
+        );
+      final (code, _, _) = await fetch([
+        '--dir',
+        tmp.path,
+        '--no-verify',
+        'english',
+      ]);
+      expect(code, 0);
+    });
+
+    test('an unknown checkpoint exits 64 and lists the valid names', () async {
+      final (code, _, err) = await fetch(['bogus']);
+      expect(code, 64);
+      expect(err, contains('english, multilingual, typed-decisions'));
+    });
+  });
+
+  group(
+    'layout matches LayaEngine.fileLoader',
+    skip: tokenizerSkip('english'),
+    () {
+      // The store installs real files (the stub graph, a real tokenizer and a
+      // Laya config) and the engine's own loader reads them back.
+      Map<String, List<int>> realFiles() {
+        final configs =
+            (jsonDecode(File('test/fixtures/decode.json').readAsStringSync())
+                    as Map)['configs']
+                as Map;
+        final stub = File('test/fixtures/ort/laya_stub.onnx').readAsBytesSync();
+        return {
+          'tokenizer.json': File(tokenizerPath('english')).readAsBytesSync(),
+          'config.json': utf8.encode(jsonEncode(configs['english'])),
+          'onnx/model.onnx': stub,
+          'onnx/model.onnx_data': const [],
+          'onnx/model_fp16.onnx': stub,
+          'onnx/model_fp16.onnx_data': const [],
+        };
+      }
+
+      ModelStore realStore(Map<String, List<int>> files) {
+        hub.override.addAll(files);
+        return ModelStore(
+          tmp.path,
+          hubBase: hub.base,
+          environment: {},
+          pins: {
+            'english': [
+              for (final e in files.entries)
+                PinnedFile(
+                  _repo,
+                  _rev,
+                  e.key,
+                  e.value.length,
+                  sha256.convert(e.value).toString(),
+                ),
+            ],
+          },
+        );
+      }
+
+      test('the four files fileLoader checks exist after install', () async {
+        await realStore(realFiles()).install('english');
+        for (final path in [
+          'tokenizer.json',
+          'config.json',
+          'onnx/model.onnx',
+          'onnx/model.onnx_data',
+        ]) {
+          expect(File(local(path)).existsSync(), isTrue, reason: path);
+        }
+      });
+
+      test(
+        'an installed checkpoint loads and predicts through ONNX Runtime',
+        tags: ['ort'],
+        () async {
+          final s = realStore(realFiles());
+          await s.install('english');
+          await s.install('english', variant: 'fp16');
+          for (final variant in ['fp32', 'fp16']) {
+            final engine = LayaEngine(
+              loader: LayaEngine.fileLoader(
+                tmp.path,
+                variant: variant,
+                threads: 1,
+              ),
+            );
+            addTearDown(engine.close);
+            final r = await engine.predict(
+              'I was charged twice for my March invoice.',
+              {
+                'dept': {
+                  'type': 'choice',
+                  'instructions': 'Which department?',
+                  'criteria': ['support', 'sales', 'billing'],
+                },
+              },
+              const PredictOptions(),
+            );
+            expect(
+              ((r['answers']! as Map)['dept']! as Map)['choice'],
+              'billing',
+            );
+          }
+        },
+      );
+    },
+  );
+}
+
+/// An [IOSink] collecting what is written to it.
+class _Sink implements IOSink {
+  final _buf = StringBuffer();
+  String get text => _buf.toString();
+
+  @override
+  Encoding encoding = utf8;
+  @override
+  void write(Object? object) => _buf.write(object);
+  @override
+  void writeln([Object? object = '']) => _buf.writeln(object);
+  @override
+  void writeAll(Iterable<Object?> objects, [String separator = '']) =>
+      _buf.writeAll(objects, separator);
+  @override
+  void writeCharCode(int charCode) => _buf.writeCharCode(charCode);
+  @override
+  void add(List<int> data) => _buf.write(utf8.decode(data));
+  @override
+  void addError(Object error, [StackTrace? stackTrace]) {}
+  @override
+  Future<void> addStream(Stream<List<int>> stream) async {}
+  @override
+  Future<void> flush() async {}
+  @override
+  Future<void> close() async {}
+  @override
+  Future<void> get done async {}
 }
