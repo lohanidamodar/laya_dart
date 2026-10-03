@@ -3,7 +3,10 @@ import 'dart:io';
 
 Future<int> _gate(String name, List<String> args) async {
   final log = File('.tooling/logs/$name.txt')..createSync(recursive: true);
-  final result = await Process.run(Platform.resolvedExecutable, args);
+  final result = await Process.run(Platform.resolvedExecutable, [
+    '--suppress-analytics',
+    ...args,
+  ]);
   log.writeAsStringSync('${result.stdout}${result.stderr}');
   return result.exitCode;
 }
