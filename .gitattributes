@@ -1,0 +1,2 @@
+# Byte-exact copies of the upstream tokenizer.json, so their sha256 matches the pinned download.
+test/fixtures/tokenizers/** -text

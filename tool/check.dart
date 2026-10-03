@@ -23,5 +23,14 @@ Future<void> main(List<String> args) async {
     'test': await _gate('test', ['test', ...args]),
   };
   stdout.writeln(codes.entries.map((e) => '${e.key}=${e.value}').join(' '));
+  // The 34 MB multilingual tokenizer.json is not committed; without it its tests skip.
+  if (!File(
+    '.tooling/checkpoints/multilingual/tokenizer/tokenizer.json',
+  ).existsSync()) {
+    stderr.writeln(
+      '!!! WARNING: the multilingual tokenizer.json is missing, so its tests '
+      'were SKIPPED. Run `dart run tool/gen_fixtures.dart` first. !!!',
+    );
+  }
   exitCode = codes.values.any((c) => c != 0) ? 1 : 0;
 }

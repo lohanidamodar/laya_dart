@@ -116,6 +116,7 @@ Future<void> main() async {
     '.tooling/checkpoints/multilingual/tokenizer/tokenizer.json',
     'multilingual',
   ], 'test/fixtures/tokenizer_multilingual.json');
+  await _run(['$ref/nfc.py'], 'test/fixtures/nfc.json');
   await _run(['$ref/pyjson.py'], 'test/fixtures/pyjson.json');
   await _run(['$ref/sequence.py'], 'test/fixtures/sequence.json');
   await _run(['$ref/lang.py'], 'test/fixtures/lang.json');
