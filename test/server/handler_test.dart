@@ -138,15 +138,18 @@ const _differences = <String, Map<String, Object?>>{
   'batch': {
     'status': 404,
     'json': {'detail': 'Not Found'},
+    'text': '{"detail":"Not Found"}',
   },
   // Dart's JSON parser refuses the non-standard NaN / Infinity literals.
   'NaN literal': {
     'status': 400,
     'json': {'detail': 'request body must be valid JSON'},
+    'text': '{"detail":"request body must be valid JSON"}',
   },
   'Infinity in state': {
     'status': 400,
     'json': {'detail': 'request body must be valid JSON'},
+    'text': '{"detail":"request body must be valid JSON"}',
   },
 };
 
@@ -243,7 +246,12 @@ void main() {
 
         final want = _differences[name] ?? c;
         expect(reply.status, want['status'], reason: reply.text);
-        if (c['method'] != 'HEAD') expect(reply.json, want['json']);
+        if (c['method'] != 'HEAD') {
+          // Byte for byte: key order and int/float spelling are what a client
+          // sees, and map equality (where 0 == 0.0) would not catch them.
+          expect(reply.text, want['text']);
+          expect(reply.json, want['json']);
+        }
         if (_differences.containsKey(name)) return;
 
         final got = <String, Object?>{
@@ -281,6 +289,7 @@ void main() {
     test('accepts a state nested $max deep, as laya-serve does', () async {
       final r = await nested(max);
       expect(r.status, (depth['at_max']! as Map)['status']);
+      expect(r.text, (depth['at_max']! as Map)['text']);
       expect(r.json, (depth['at_max']! as Map)['json']);
     });
 
@@ -289,6 +298,7 @@ void main() {
       () async {
         final r = await nested(max + 1);
         expect(r.status, (depth['over_max']! as Map)['status']);
+        expect(r.text, (depth['over_max']! as Map)['text']);
         expect(r.json, (depth['over_max']! as Map)['json']);
       },
     );

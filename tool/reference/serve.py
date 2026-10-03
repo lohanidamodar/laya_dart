@@ -314,6 +314,9 @@ def run_case(case):
         resp = client.request(case["method"], case["path"], content=content, headers=headers)
     out = {"status": resp.status_code}
     out["json"] = json.loads(resp.content) if resp.content else None
+    # The exact bytes Starlette sent (JSONResponse.render: ensure_ascii=False, allow_nan=False,
+    # separators=(",", ":")), so key order and int/float spelling are pinned, not just the value.
+    out["text"] = resp.content.decode("utf-8")
     seen = {}
     for name in ("content-type", "allow", "retry-after", "www-authenticate", "location"):
         if name in resp.headers:
@@ -333,7 +336,7 @@ def depth_case(d):
     text = '{"state":' + "[" * d + "]" * d + ',"questions":{}}'
     with TestClient(app) as client:
         resp = client.post("/v1/systemone", content=text.encode())
-    return resp.status_code, resp.json()
+    return resp.status_code, resp.json(), resp.content.decode("utf-8")
 
 
 def depth():
@@ -350,8 +353,8 @@ def depth():
         else:
             hi = mid
     return {"max_state_depth": lo,
-            "at_max": dict(zip(("status", "json"), depth_case(lo))),
-            "over_max": dict(zip(("status", "json"), depth_case(lo + 1)))}
+            "at_max": dict(zip(("status", "json", "text"), depth_case(lo))),
+            "over_max": dict(zip(("status", "json", "text"), depth_case(lo + 1)))}
 
 
 def main():
