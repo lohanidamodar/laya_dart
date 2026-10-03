@@ -2,6 +2,7 @@
 library;
 
 import '../json/python_json.dart';
+import '../routing/py_unicode.dart';
 
 /// laya `render_criterion`: strings pass through, else compact Python JSON.
 String renderCriterion(Object? value) =>
@@ -44,8 +45,16 @@ String _strRepr(String s) {
       out.write(r'\r');
     } else if (ch == '\t') {
       out.write(r'\t');
-    } else if (r < 0x20 || r == 0x7f) {
-      out.write('\\x${r.toRadixString(16).padLeft(2, '0')}');
+    } else if (r < 0x20 || r == 0x7f || (r > 0x7f && !pyIsPrintable(r))) {
+      // Python escapes a non-printable code point by its width.
+      final hex = r.toRadixString(16);
+      out.write(
+        r < 0x100
+            ? '\\x${hex.padLeft(2, '0')}'
+            : r < 0x10000
+            ? '\\u${hex.padLeft(4, '0')}'
+            : '\\U${hex.padLeft(8, '0')}',
+      );
     } else {
       out.write(ch);
     }

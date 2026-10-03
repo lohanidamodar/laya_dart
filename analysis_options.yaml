@@ -4,7 +4,9 @@ analyzer:
     strict-casts: true
     strict-inference: true
     strict-raw-types: true
-  exclude: [lib/src/tokenizer/nfc_data.g.dart]
+  exclude:
+    - lib/src/tokenizer/nfc_data.g.dart
+    - lib/src/routing/unicode_data.g.dart
 linter:
   rules:
     - public_member_api_docs

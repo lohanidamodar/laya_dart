@@ -121,6 +121,7 @@ Future<void> main() async {
   await _run(['$ref/sequence.py'], 'test/fixtures/sequence.json');
   await _run(['$ref/lang.py'], 'test/fixtures/lang.json');
   await _run(['$ref/route.py'], 'test/fixtures/route.json');
+  await _run(['$ref/unicode_props.py'], 'test/fixtures/unicode_props.json');
   await _run(['$ref/decode.py'], 'test/fixtures/decode.json');
   await _run(['$ref/numpy_f32.py'], 'test/fixtures/numpy_f32.json');
 }

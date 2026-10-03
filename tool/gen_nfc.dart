@@ -25,6 +25,13 @@
 // Structure: [Ucd] parses UnicodeData.txt into per-code-point records once; each table is its own
 // emitter over those records. Another generated file (Python `unicodedata` categories and
 // decompositions, for instance) is another emitter and another output with its own pinned version.
+//
+// Second output: lib/src/routing/unicode_data.g.dart, the character data behind the Python `str`,
+// `re` and `unicodedata` behaviour that laya's `lang.py` and `%r` rely on. It is pinned to
+// Unicode 15.0.0, the version of Python 3.12's `unicodedata.unidata_version` (the venv reports
+// 15.0.0), and is independent of the NFC pin above. The flags follow CPython's
+// Tools/unicode/makeunicodedata.py; test/fixtures/unicode_props.json
+// (tool/reference/unicode_props.py) checks every code point against the reference.
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
@@ -181,7 +188,242 @@ String _constString(String name, String doc, List<String> entries) {
   return '/// $doc\nconst String $name =\n${literals.join('\n')};\n';
 }
 
+const _pyVersion = '15.0.0';
+
+/// sha256 of each UCD file at [_pyVersion], recorded on first download.
+const _pySha256 = {
+  'UnicodeData.txt':
+      '806e9aed65037197f1ec85e12be6e8cd870fc5608b4de0fffd990f689f376a73',
+  'DerivedCoreProperties.txt':
+      'd367290bc0867e6b484c68370530bdd1a08b6b32404601b8c7accaf83e05628d',
+  'SpecialCasing.txt':
+      '78b29c64b5840d25c11a9f31b665ee551b8a499eca6c70d770fcad7dd710f494',
+};
+
+const _pyOut = 'lib/src/routing/unicode_data.g.dart';
+
+/// Flag bits of the Python character table, as CPython's makeunicodedata.py derives them.
+const _pyFlags = {
+  'alpha': 1, // category Lm, Lt, Lu, Ll or Lo
+  'decimal': 2, // UnicodeData field 6 present
+  'numeric': 4, // UnicodeData field 8 present (digit and decimal imply it)
+  'space': 8, // bidi WS, B or S, or category Zs
+  'lower': 16, // DerivedCoreProperties Lowercase
+  'upper': 32, // DerivedCoreProperties Uppercase
+  'title': 64, // category Lt
+  'cased': 128, // DerivedCoreProperties Cased
+  'caseIgnorable': 256, // DerivedCoreProperties Case_Ignorable
+  'nonPrintable': 512, // category C* or Z*, except U+0020
+  'combining': 1024, // canonical combining class != 0
+};
+
+/// The Python character table at [_pyVersion]: flags per code point and the lowercase mapping.
+class _PyUcd {
+  _PyUcd(String unicodeData, String derived, String specialCasing) {
+    String? rangeFirst;
+    for (final line in unicodeData.split('\n')) {
+      if (line.trim().isEmpty) continue;
+      final f = line.split(';');
+      final cp = int.parse(f[0], radix: 16);
+      // `<..., First>`/`<..., Last>` pairs stand for every code point between them.
+      if (f[1].endsWith(', First>')) {
+        rangeFirst = f[0];
+        continue;
+      }
+      final start = f[1].endsWith(', Last>')
+          ? int.parse(rangeFirst!, radix: 16)
+          : cp;
+      final flags = _recordFlags(f);
+      for (var c = start; c <= cp; c++) {
+        this.flags[c] = flags;
+        if (f[13].isNotEmpty) lower[c] = [int.parse(f[13], radix: 16)];
+      }
+    }
+    const props = {
+      'Lowercase': 'lower',
+      'Uppercase': 'upper',
+      'Cased': 'cased',
+      'Case_Ignorable': 'caseIgnorable',
+    };
+    for (final line in derived.split('\n')) {
+      final data = line.split('#').first.trim();
+      if (data.isEmpty) continue;
+      final parts = [for (final p in data.split(';')) p.trim()];
+      final range = parts[0];
+      final prop = parts[1];
+      final bit = _pyFlags[props[prop]];
+      if (bit == null) continue;
+      final ends = range.split('..');
+      final lo = int.parse(ends.first, radix: 16);
+      final hi = int.parse(ends.last, radix: 16);
+      for (var c = lo; c <= hi; c++) {
+        flags[c] = (flags[c] ?? _pyFlags['nonPrintable']!) | bit;
+      }
+    }
+    // CPython ignores every conditional mapping (it hardcodes Final_Sigma instead), so only
+    // unconditional lines count; their lowercase replaces the simple one.
+    for (final line in specialCasing.split('\n')) {
+      final data = line.split('#').first.trim();
+      if (data.isEmpty) continue;
+      final f = [for (final p in data.split(';')) p.trim()];
+      if (f.length > 4 && f[4].isNotEmpty) continue;
+      lower[int.parse(f[0], radix: 16)] = [
+        for (final h in f[1].split(' ')) int.parse(h, radix: 16),
+      ];
+    }
+  }
+
+  static int _recordFlags(List<String> f) {
+    final category = f[2];
+    final bidi = f[4];
+    var flags = 0;
+    if (const ['Lm', 'Lt', 'Lu', 'Ll', 'Lo'].contains(category)) {
+      flags |= _pyFlags['alpha']!;
+    }
+    if (f[6].isNotEmpty) flags |= _pyFlags['decimal']!;
+    if (f[8].isNotEmpty) flags |= _pyFlags['numeric']!;
+    if (category == 'Zs' || const ['WS', 'B', 'S'].contains(bidi)) {
+      flags |= _pyFlags['space']!;
+    }
+    if (category == 'Lt') flags |= _pyFlags['title']!;
+    if (f[0] != '0020' && (category[0] == 'C' || category[0] == 'Z')) {
+      flags |= _pyFlags['nonPrintable']!;
+    }
+    if (int.parse(f[3]) != 0) flags |= _pyFlags['combining']!;
+    return flags;
+  }
+
+  /// Flags of each assigned code point; an unassigned one (category Cn) is only non-printable.
+  final Map<int, int> flags = {};
+
+  /// The full lowercase of each code point that has one.
+  final Map<int, List<int>> lower = {};
+
+  int flagsOf(int cp) => flags[cp] ?? _pyFlags['nonPrintable']!;
+
+  /// `start:flags` at each code point where the flags change, from U+0000.
+  List<String> flagRuns() {
+    final out = <String>[];
+    int? last;
+    for (var cp = 0; cp < 0x110000; cp++) {
+      final f = flagsOf(cp);
+      if (f != last) out.add('${_hex(cp)}:${_hex(f)}');
+      last = f;
+    }
+    return out;
+  }
+
+  /// One-to-one lowercase mappings as `start.count.step.delta`: [count] code points from
+  /// [start], [step] apart, each mapping to itself plus [delta] (signed hex).
+  List<String> lowerRuns() {
+    final singles = [
+      for (final e in lower.entries)
+        if (e.value.length == 1 && e.value.single != e.key)
+          (e.key, e.value.single - e.key),
+    ]..sort((a, b) => a.$1 - b.$1);
+    final out = <String>[];
+    for (var i = 0; i < singles.length;) {
+      final (start, delta) = singles[i];
+      var step = 1;
+      var count = 1;
+      if (i + 1 < singles.length && singles[i + 1].$2 == delta) {
+        step = singles[i + 1].$1 - start;
+        while (i + count < singles.length &&
+            singles[i + count].$2 == delta &&
+            singles[i + count].$1 == start + count * step) {
+          count++;
+        }
+      }
+      final d = delta < 0 ? '-${_hex(-delta)}' : _hex(delta);
+      out.add('${_hex(start)}.${_hex(count)}.${_hex(step)}.$d');
+      i += count;
+    }
+    return out;
+  }
+
+  /// Lowercase mappings to more than one code point, as `cp:l.l...`.
+  List<String> lowerExpansions() => [
+    for (final e in lower.entries.toList()..sort((a, b) => a.key - b.key))
+      if (e.value.length > 1) '${_hex(e.key)}:${e.value.map(_hex).join('.')}',
+  ];
+}
+
+Future<void> _writeFormatted(String path, String content) async {
+  File(path)
+    ..parent.createSync(recursive: true)
+    ..writeAsStringSync(content);
+  final format = await Process.run(Platform.resolvedExecutable, [
+    'format',
+    path,
+  ]);
+  if (format.exitCode != 0) {
+    throw ProcessException('dart', ['format', path], '${format.stderr}');
+  }
+  stdout.writeln('wrote $path (${File(path).lengthSync()} bytes)');
+}
+
+Future<void> _writePyUnicode() async {
+  Future<String> file(String name) =>
+      _ucdFile(_pyVersion, name, _pySha256[name]!);
+  final ucd = _PyUcd(
+    await file('UnicodeData.txt'),
+    await file('DerivedCoreProperties.txt'),
+    await file('SpecialCasing.txt'),
+  );
+  final out = StringBuffer()
+    ..writeln(
+      '// GENERATED by tool/gen_nfc.dart from the Unicode $_pyVersion UCD.',
+    )
+    ..writeln('// Do not edit by hand; rerun the tool. Numbers are hex.')
+    ..writeln()
+    ..writeln(
+      '/// The Unicode version these tables implement: Python 3.12\'s '
+      '`unicodedata.unidata_version`.',
+    )
+    ..writeln("const String pyUnicodeVersion = '$_pyVersion';")
+    ..writeln();
+  for (final e in _pyFlags.entries) {
+    out
+      ..writeln('/// Flag bit: ${e.key}.')
+      ..writeln(
+        'const int py${e.key[0].toUpperCase()}${e.key.substring(1)}Flag = '
+        '${e.value};',
+      )
+      ..writeln();
+  }
+  out
+    ..writeln(
+      _constString(
+        'pyFlagRuns',
+        'Character flags as `start:flags`, one entry where they change, '
+            'from U+0000 to U+10FFFF.',
+        ucd.flagRuns(),
+      ),
+    )
+    ..writeln(
+      _constString(
+        'pyLowerRuns',
+        'One-to-one lowercase mappings, as `start.count.step.delta` '
+            '(delta signed).',
+        ucd.lowerRuns(),
+      ),
+    )
+    ..writeln(
+      _constString(
+        'pyLowerExpansions',
+        'Lowercase mappings to several code points, as `cp:l.l...`.',
+        ucd.lowerExpansions(),
+      ),
+    );
+  await _writeFormatted(_pyOut, out.toString());
+}
+
 Future<void> main() async {
+  await _writeNfc();
+  await _writePyUnicode();
+}
+
+Future<void> _writeNfc() async {
   final ucd = _Ucd(
     await _ucdFile(_version, 'UnicodeData.txt', _sha256['UnicodeData.txt']!),
     await _ucdFile(
@@ -248,13 +490,5 @@ Future<void> main() async {
     ..writeln()
     ..writeln('/// Number of precomposed syllables.')
     ..writeln('const int hangulSCount = hangulLCount * hangulNCount;');
-  File(_out).writeAsStringSync(out.toString());
-  final format = await Process.run(Platform.resolvedExecutable, [
-    'format',
-    _out,
-  ]);
-  if (format.exitCode != 0) {
-    throw ProcessException('dart', ['format', _out], '${format.stderr}');
-  }
-  stdout.writeln('wrote $_out (${File(_out).lengthSync()} bytes)');
+  await _writeFormatted(_out, out.toString());
 }

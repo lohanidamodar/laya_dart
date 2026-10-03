@@ -7,6 +7,7 @@ import 'package:laya_server/src/server/errors.dart';
 import 'package:test/test.dart';
 
 void main() {
+  reprTests();
   test('renderCriterion passes strings and dumps the rest', () {
     expect(renderCriterion('a'), 'a');
     expect(
@@ -54,5 +55,24 @@ void main() {
         });
       }
     }
+  });
+}
+
+// Python 3.12 repr of each input, recorded from the reference venv.
+const _reprs = {
+  '\u00a0': r"'\xa0'",
+  '\u200b': r"'\u200b'",
+  '\u{e0001}': r"'\U000e0001'",
+  'a\u0085b': r"'a\x85b'",
+  'é\u2028': r"'é\u2028'",
+  'x\u0378': r"'x\u0378'",
+};
+
+void reprTests() {
+  test('pyRepr escapes non-printable code points like Python', () {
+    for (final e in _reprs.entries) {
+      expect(pyRepr(e.key), e.value);
+    }
+    expect(pyRepr(String.fromCharCode(0xd800)), r"'\ud800'");
   });
 }
