@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:laya_server/src/tokenizer/tokenizer.dart';
 import 'package:test/test.dart';
 
+import '../support/checkpoints.dart';
+
 Map<String, Object?> _json({
   required String preTokenizer,
   List<Object> merges = const [],
@@ -115,10 +117,10 @@ void main() {
   });
 
   group('LayaTokenizer.fromJson', () {
-    test('ByteLevel and Metaspace are not implemented yet', () {
+    test('ByteLevel builds and Metaspace is not implemented yet', () {
       expect(
-        () => LayaTokenizer.fromJson(_json(preTokenizer: 'ByteLevel')),
-        throwsUnsupportedError,
+        LayaTokenizer.fromJson(_json(preTokenizer: 'ByteLevel')).maskId,
+        13,
       );
       expect(
         () => LayaTokenizer.fromJson(_json(preTokenizer: 'Metaspace')),
@@ -134,50 +136,43 @@ void main() {
     });
   });
 
-  // The downloaded checkpoints live under the git-ignored .tooling/ (tool/gen_fixtures.dart).
   final checkpoints = {
     'english': (50281, 50282, 50283, 50284, '[MASK]'),
     'typed-decisions': (50281, 50282, 50283, 50284, '[MASK]'),
     'multilingual': (2, 1, 0, 4, '<mask>'),
   };
   for (final MapEntry(key: name, value: expected) in checkpoints.entries) {
-    final file = File('.tooling/checkpoints/$name/tokenizer/tokenizer.json');
-    test(
-      'special ids of the $name checkpoint match its post_processor',
-      () {
-        final json =
-            jsonDecode(file.readAsStringSync()) as Map<String, Object?>;
-        final spec = TokenizerSpec.fromJson(json);
-        expect((
-          spec.clsId,
-          spec.sepId,
-          spec.padId,
-          spec.maskId,
-          spec.maskToken,
-        ), expected);
-        final special =
-            (json['post_processor']! as Map<String, Object?>)['special_tokens']!
-                as Map<String, Object?>;
-        int idOf(String token) =>
-            ((special[token]! as Map<String, Object?>)['ids']! as List).single
-                as int;
-        if (name == 'multilingual') {
-          expect(spec.clsId, idOf('<bos>'));
-          expect(spec.sepId, idOf('<eos>'));
-        } else {
-          for (final (token, id) in [
-            ('[CLS]', spec.clsId),
-            ('[SEP]', spec.sepId),
-            ('[PAD]', spec.padId),
-            ('[MASK]', spec.maskId),
-          ]) {
-            expect(id, idOf(token), reason: token);
-          }
+    test('special ids of the $name checkpoint match its post_processor', () {
+      final json =
+          jsonDecode(File(tokenizerPath(name)).readAsStringSync())
+              as Map<String, Object?>;
+      final spec = TokenizerSpec.fromJson(json);
+      expect((
+        spec.clsId,
+        spec.sepId,
+        spec.padId,
+        spec.maskId,
+        spec.maskToken,
+      ), expected);
+      final special =
+          (json['post_processor']! as Map<String, Object?>)['special_tokens']!
+              as Map<String, Object?>;
+      int idOf(String token) =>
+          ((special[token]! as Map<String, Object?>)['ids']! as List).single
+              as int;
+      if (name == 'multilingual') {
+        expect(spec.clsId, idOf('<bos>'));
+        expect(spec.sepId, idOf('<eos>'));
+      } else {
+        for (final (token, id) in [
+          ('[CLS]', spec.clsId),
+          ('[SEP]', spec.sepId),
+          ('[PAD]', spec.padId),
+          ('[MASK]', spec.maskId),
+        ]) {
+          expect(id, idOf(token), reason: token);
         }
-      },
-      skip: file.existsSync()
-          ? false
-          : 'run tool/gen_fixtures.dart to download $name',
-    );
+      }
+    }, skip: tokenizerSkip(name));
   }
 }
