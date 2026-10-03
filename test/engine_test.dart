@@ -341,7 +341,10 @@ void main() {
       final r = await engine.predict(
         long,
         _questions,
-        const PredictOptions(maxLen: 64, minConfidence: 0.5),
+        const PredictOptions(
+          maxLen: 64,
+          minConfidence: ConfidenceThreshold.scalar(0.5),
+        ),
       );
       expect((r['usage']! as Map)['truncated'], isTrue);
       final a = (r['answers']! as Map)['refund']! as Map;

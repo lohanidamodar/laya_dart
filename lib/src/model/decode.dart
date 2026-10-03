@@ -22,6 +22,7 @@ import 'dart:typed_data';
 
 import '../json/python_json.dart';
 import 'checkpoint.dart';
+import 'confidence.dart';
 import 'numpy_f32.dart';
 import 'question.dart';
 import 'render.dart';
@@ -33,15 +34,15 @@ import 'render.dart';
 /// order; only its first k entries are read, k being the question's option
 /// count (laya's marker count). [actLogits] is the row of `act_logits`.
 ///
-/// With [minConfidence] set (a threshold in [0, 1] the caller has validated),
-/// the answer also carries the gate's `abstention` and `abstention_threshold`,
-/// and `low_confidence: true` when it abstained (laya `apply_confidence_gate`).
+/// With [minConfidence] set (scalar or per-bucket), the answer also carries the
+/// gate's `abstention` and `abstention_threshold`, and `low_confidence: true`
+/// when it abstained (laya `apply_confidence_gate`, applied per answer).
 Map<String, Object?> decodeAnswer(
   Question q,
   List<double> logits,
   List<double> actLogits,
   CheckpointConfig cfg, {
-  double? minConfidence,
+  ConfidenceThreshold? minConfidence,
 }) {
   final k = q.renderOptions().length;
   if (logits.length < k) {
@@ -123,7 +124,7 @@ Map<String, Object?> decodeAnswer(
         'action': action,
       };
   }
-  if (minConfidence != null) _applyGate(answer, minConfidence);
+  minConfidence?.gate(answer);
   return answer;
 }
 
@@ -227,28 +228,3 @@ double _confidenceFromProbs(Float32List p, int k) {
 }
 
 double _clip01(double v) => v < 0.0 ? 0.0 : (v > 1.0 ? 1.0 : v);
-
-/// laya `apply_confidence_gate` with a scalar threshold (confidence.py).
-void _applyGate(Map<String, Object?> answer, double threshold) {
-  final conf = _gateConfidence(answer);
-  // flag_low_confidence: a 0.0 threshold flags nothing.
-  if (threshold != 0.0 && conf != null && conf < threshold) {
-    answer['low_confidence'] = true;
-  }
-  answer['abstention'] = answer['low_confidence'] == true
-      ? 'abstained'
-      : conf == null
-      ? 'unevaluated'
-      : 'passed';
-  answer['abstention_threshold'] = threshold;
-}
-
-/// confidence.py `_gate_confidence`: `answer_confidence`, else `confidence`,
-/// else null when neither is a finite number.
-double? _gateConfidence(Map<String, Object?> answer) {
-  for (final key in ['answer_confidence', 'confidence']) {
-    final v = answer[key];
-    if (v is double && v.isFinite) return v;
-  }
-  return null;
-}

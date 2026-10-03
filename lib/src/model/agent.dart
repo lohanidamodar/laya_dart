@@ -12,6 +12,7 @@ import '../inference/batch.dart';
 import '../server/errors.dart';
 import '../tokenizer/tokenizer.dart';
 import 'checkpoint.dart';
+import 'confidence.dart';
 import 'decode.dart';
 import 'question.dart';
 import 'render.dart' show pyRepr;
@@ -56,8 +57,8 @@ class LayaAgent {
   ///
   /// [state] is a string, or decoded JSON (a map or list); a list keeps its
   /// end when truncated. [maxLen] and [headMaxLen] override the config's
-  /// windows. [minConfidence] (already validated, in [0, 1]) adds laya's
-  /// abstention fields to every answer.
+  /// windows. [minConfidence] (scalar or per-bucket) adds laya's abstention
+  /// fields to every answer.
   ///
   /// Throws [ApiException] 422 with laya's message when a question's option
   /// markers do not all fit in [maxLen].
@@ -66,7 +67,7 @@ class LayaAgent {
     Map<String, Question> questions, {
     int? maxLen,
     int? headMaxLen,
-    double? minConfidence,
+    ConfidenceThreshold? minConfidence,
   }) async {
     if (questions.isEmpty) {
       return {

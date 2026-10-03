@@ -8,12 +8,15 @@ import '../routing/py_unicode.dart';
 String renderCriterion(Object? value) =>
     value is String ? value : pythonJsonDumps(value);
 
-/// Python's `str()` of a JSON scalar (`None`, `True`, `1`, `2.5`, text).
+/// Python's `str()` of a JSON scalar (`None`, `True`, `1`, `2.5`, `inf`,
+/// text).
 String pyStr(Object? value) => switch (value) {
   null => 'None',
   true => 'True',
   false => 'False',
   final String s => s,
+  final double d when d.isNaN => 'nan',
+  final double d when d.isInfinite => d.isNegative ? '-inf' : 'inf',
   final double d => pythonFloatRepr(d),
   _ => '$value',
 };

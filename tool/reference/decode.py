@@ -31,7 +31,12 @@ from laya.onnx_agent import ONNXAgent
 from _shared import CHECKPOINTS, NAMES, emit
 
 STATE = "Synthetic state for decode fixtures."
-MIN_CONFIDENCES = (None, 0.0, 0.6)
+# Scalars, and per-bucket maps (#394): a named bucket, the "default" fallback, and a map that
+# names no bucket of the question (so 0.0 applies, with no short-circuit).
+MIN_CONFIDENCES = (None, 0.0, 0.6,
+                   {"choice:3-5": 0.7, "score:2": 0.99, "noul:2": 0.8, "default": 0.3},
+                   {"choice:11+": 1.0},
+                   {"default": 0.55})
 TYPES = ("choice", "score", "noul")
 
 

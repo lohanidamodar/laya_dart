@@ -13,6 +13,8 @@ export 'src/inference/batch.dart' show InferenceBatch;
 export 'src/inference/ort_backend.dart' show OrtBackend;
 export 'src/model/agent.dart' show LayaAgent;
 export 'src/model/checkpoint.dart' show CheckpointConfig, CheckpointSpec;
+export 'src/model/confidence.dart'
+    show BucketThresholds, ConfidenceThreshold, ScalarThreshold;
 export 'src/model/question.dart'
     show ChoiceQuestion, NoulQuestion, Question, QuestionType, ScoreQuestion;
 export 'src/server/errors.dart' show ApiException;

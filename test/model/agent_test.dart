@@ -5,6 +5,7 @@ import 'package:laya_server/src/inference/backend.dart';
 import 'package:laya_server/src/inference/batch.dart';
 import 'package:laya_server/src/model/agent.dart';
 import 'package:laya_server/src/model/checkpoint.dart';
+import 'package:laya_server/src/model/confidence.dart';
 import 'package:laya_server/src/model/question.dart';
 import 'package:laya_server/src/model/sequence.dart';
 import 'package:laya_server/src/server/errors.dart';
@@ -223,9 +224,11 @@ void main() {
     });
 
     test('min_confidence adds the gate fields to every answer', () async {
-      final result = await agent(
-        FakeBackend(_ascending),
-      ).predict(state, _parse(raw), minConfidence: 0.99);
+      final result = await agent(FakeBackend(_ascending)).predict(
+        state,
+        _parse(raw),
+        minConfidence: const ConfidenceThreshold.scalar(0.99),
+      );
       final answers = result['answers']! as Map<String, Object?>;
       for (final a in answers.values.cast<Map<String, Object?>>()) {
         expect(a['abstention_threshold'], 0.99);
@@ -251,7 +254,7 @@ void main() {
           configs[name]! as Map<String, Object?>,
         );
         final mine = cases.where((c) => c['checkpoint'] == name).toList();
-        expect(mine, hasLength(requests.length * 4));
+        expect(mine, hasLength(requests.length * 5));
         final failures = <String>[];
         for (final c in mine) {
           final req = requests[c['request_index']! as int];
@@ -282,7 +285,9 @@ void main() {
               questions,
               maxLen: variant['max_len'] as int?,
               headMaxLen: variant['head_max_len'] as int?,
-              minConfidence: (variant['min_confidence'] as num?)?.toDouble(),
+              minConfidence: variant['min_confidence'] == null
+                  ? null
+                  : ConfidenceThreshold.check(variant['min_confidence']),
             );
           } on ApiException catch (e) {
             got = 'ValueError: ${e.detail}';

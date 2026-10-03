@@ -12,6 +12,7 @@ import 'package:path/path.dart' as p;
 import 'inference/ort_backend.dart';
 import 'model/agent.dart';
 import 'model/checkpoint.dart';
+import 'model/confidence.dart';
 import 'model/question.dart';
 import 'routing/router.dart';
 import 'server/errors.dart';
@@ -51,8 +52,9 @@ class PredictOptions {
   /// Overrides the checkpoint's question-head token budget.
   final int? headMaxLen;
 
-  /// The abstention threshold, already validated to [0, 1].
-  final double? minConfidence;
+  /// The abstention threshold (laya `min_confidence`): one for every answer,
+  /// or one per option-count bucket. See [ConfidenceThreshold.check].
+  final ConfidenceThreshold? minConfidence;
 }
 
 final _log = Logger('laya_server.engine');
@@ -67,7 +69,7 @@ const _publishedModelIds = {
 
 /// laya-serve `_resolve_model`: the checkpoint a client's `model` names, or
 /// null to auto-route. It never throws.
-String? _resolveModel(String? model) {
+String? resolveClientModel(String? model) {
   if (model == null || model.isEmpty) return null;
   // Python `str.strip().lower()`; the ids it is compared with are ASCII.
   final published = _publishedModelIds[model.trim().toLowerCase()];
@@ -249,7 +251,7 @@ class LayaEngine {
       decision = _router.route(
         state,
         questions,
-        model: _resolveModel(options.model),
+        model: resolveClientModel(options.model),
         task: options.task,
         lang: options.lang,
         langGuess: options.langGuess,

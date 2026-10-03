@@ -35,6 +35,7 @@ VARIANTS = (
     {"max_len": 128},
     {"max_len": 48, "head_max_len": 32},
     {"min_confidence": 0.6},
+    {"min_confidence": {"choice:2": 0.9, "choice:3-5": 0.5, "default": 0.75}},
 )
 
 MODEL_VALUES = (

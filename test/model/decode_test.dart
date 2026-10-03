@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:laya_server/src/model/checkpoint.dart';
+import 'package:laya_server/src/model/confidence.dart';
 import 'package:laya_server/src/model/decode.dart';
 import 'package:laya_server/src/model/question.dart';
 import 'package:test/test.dart';
@@ -36,7 +37,7 @@ void main() {
   test('decodeAnswer equals laya predict_batch on every fixture row', () {
     final cfgs = {for (final n in _names) n: fixtureConfig(n)};
     final cases = (fixture['cases'] as List).cast<Map<String, Object?>>();
-    expect(cases, hasLength(1980));
+    expect(cases, hasLength(3960));
     final failures = <String>[];
     for (final c in cases) {
       final q = Question.parse('q', c['question']);
@@ -49,7 +50,9 @@ void main() {
           for (final v in c['act_logits']! as List) (v as num).toDouble(),
         ]),
         cfgs[c['checkpoint']]!,
-        minConfidence: (c['min_confidence'] as num?)?.toDouble(),
+        minConfidence: c['min_confidence'] == null
+            ? null
+            : ConfidenceThreshold.check(c['min_confidence']),
       );
       if (jsonEncode(got) != jsonEncode(c['answer'])) {
         failures.add('${jsonEncode(c)}\n  got ${jsonEncode(got)}');
