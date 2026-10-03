@@ -84,19 +84,43 @@ void _decompose(int cp, List<int> out) {
 
 /// Stable-sorts each run of nonzero combining classes by class (canonical ordering).
 void _orderMarks(List<int> cps) {
-  for (var i = 1; i < cps.length; i++) {
-    final c = _ccc(cps[i]);
-    if (c == 0) continue;
-    // Insertion sort: runs are short, and moving only past strictly greater classes is stable.
-    var j = i;
-    final cp = cps[i];
-    while (j > 0) {
-      final prev = _ccc(cps[j - 1]);
-      if (prev == 0 || prev <= c) break;
-      cps[j] = cps[j - 1];
-      j--;
+  var i = 0;
+  while (i < cps.length) {
+    if (_ccc(cps[i]) == 0) {
+      i++;
+      continue;
     }
-    cps[j] = cp;
+    var end = i + 1;
+    while (end < cps.length && _ccc(cps[end]) != 0) {
+      end++;
+    }
+    if (end - i > 1) _sortRun(cps, i, end);
+    i = end;
+  }
+}
+
+/// Stable-sorts `cps[start, end)` (all nonzero classes) by class.
+void _sortRun(List<int> cps, int start, int end) {
+  if (end - start <= 16) {
+    // Insertion sort; moving only past strictly greater classes keeps it stable.
+    for (var i = start + 1; i < end; i++) {
+      final cp = cps[i];
+      final c = _ccc(cp);
+      var j = i;
+      while (j > start && _ccc(cps[j - 1]) > c) {
+        cps[j] = cps[j - 1];
+        j--;
+      }
+      cps[j] = cp;
+    }
+    return;
+  }
+  // A long run (hostile input) sorts in O(n log n); the index tie-break keeps it stable.
+  final keyed = [
+    for (var i = start; i < end; i++) (_ccc(cps[i]), i - start, cps[i]),
+  ]..sort((a, b) => a.$1 != b.$1 ? a.$1 - b.$1 : a.$2 - b.$2);
+  for (var i = 0; i < keyed.length; i++) {
+    cps[start + i] = keyed[i].$3;
   }
 }
 

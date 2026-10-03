@@ -25,6 +25,15 @@ void main() {
     expect(nfc('q\u{301}\u{323}'), 'q\u{323}\u{301}');
   });
 
+  test('a long run of marks sorts stably (checked against HF tokenizers)', () {
+    final input = 'a${'\u{301}\u{323}' * 1000}';
+    expect(nfc(input), '\u{1ea1}${'\u{323}' * 999}${'\u{301}' * 1000}');
+    // 100k marks in one run must not take quadratic time.
+    final stopwatch = Stopwatch()..start();
+    nfc('a${'\u{301}\u{323}' * 50000}');
+    expect(stopwatch.elapsed, lessThan(const Duration(seconds: 2)));
+  });
+
   test('a mark of the same class blocks composition', () {
     expect(nfc('a\u{301}\u{301}'), '\u{e1}\u{301}');
     expect(nfc('a\u{300}\u{301}'), '\u{e0}\u{301}');
