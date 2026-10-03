@@ -4,6 +4,7 @@ import 'dart:io';
 import 'added_tokens.dart';
 import 'bpe.dart';
 import 'byte_level.dart';
+import 'metaspace.dart';
 
 /// A tokenizer loaded from a Hugging Face `tokenizer.json` (ByteLevel or Metaspace BPE).
 ///
@@ -55,9 +56,8 @@ abstract class LayaTokenizer {
 /// Construction point for the ModernBERT ByteLevel tokenizer.
 LayaTokenizer _byteLevel(TokenizerSpec spec) => ByteLevelTokenizer(spec);
 
-/// Construction point for the mmBERT Metaspace tokenizer (Task 6).
-LayaTokenizer _metaspace(TokenizerSpec spec) =>
-    throw UnsupportedError('the Metaspace tokenizer is not implemented yet');
+/// Construction point for the mmBERT Metaspace tokenizer.
+LayaTokenizer _metaspace(TokenizerSpec spec) => MetaspaceTokenizer(spec);
 
 /// The parts of a tokenizer.json that every implementation shares.
 class TokenizerSpec {
