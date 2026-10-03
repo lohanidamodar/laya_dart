@@ -71,14 +71,19 @@ String normaliseCheckpointName(String name) {
   var key = _pyLowerStr(_pyStripStr(name));
   key = _aliases[key] ?? key;
   if (!CheckpointSpec.all.containsKey(key)) {
-    final names = CheckpointSpec.all.keys.toList()..sort();
-    final aliases = _aliases.keys.toList()..sort();
-    throw ArgumentError(
-      'unknown model ${pyRepr(name)}; choose one of ${pyRepr(names)} '
-      '(or an alias: ${pyRepr(aliases)})',
-    );
+    throw ArgumentError(unknownCheckpointMessage(name));
   }
   return key;
+}
+
+/// laya `normalise_name`'s message for a [name] that is not a checkpoint or
+/// alias. [name] may be any decoded JSON value: laya reads it through
+/// `str()`, so no non-string names one.
+String unknownCheckpointMessage(Object? name) {
+  final names = CheckpointSpec.all.keys.toList()..sort();
+  final aliases = _aliases.keys.toList()..sort();
+  return 'unknown model ${pyRepr(name)}; choose one of ${pyRepr(names)} '
+      '(or an alias: ${pyRepr(aliases)})';
 }
 
 /// The typed-decisions workflow whose question ids [questions] has exactly,
