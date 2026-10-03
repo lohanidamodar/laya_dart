@@ -123,6 +123,7 @@ Future<void> main() async {
   await _run(['$ref/route.py'], 'test/fixtures/route.json');
   await _run(['$ref/unicode_props.py'], 'test/fixtures/unicode_props.json');
   await _run(['$ref/decode.py'], 'test/fixtures/decode.json');
+  await _run(['$ref/predict.py'], 'test/fixtures/predict.json');
   await _run(['$ref/numpy_f32.py'], 'test/fixtures/numpy_f32.json');
   // The ONNX Runtime binding's test model; the script writes the binary itself.
   Directory('test/fixtures/ort').createSync(recursive: true);
