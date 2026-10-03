@@ -151,6 +151,7 @@ sealed class Question {
           text,
           _order(json),
           labels: [for (final l in rawLabels) pyStr(l)],
+          keys: [for (final l in rawLabels) l as Object],
           criteria: crit is List
               ? List<Object?>.filled(crit.length, null)
               : (crit as Map).values.toList(),
@@ -271,11 +272,17 @@ final class ChoiceQuestion extends Question {
     super.instructions,
     super.optionOrder, {
     required this.labels,
+    required this.keys,
     required this.criteria,
   }) : super._();
 
   /// The option labels as option text (Python `str(label)`), in order.
   final List<String> labels;
+
+  /// The labels as the request gave them (a string, number or bool): laya's
+  /// answer keys. `choice` reports one as is, and `probabilities` is keyed by
+  /// them as Python `json.dumps` writes a dict key.
+  final List<Object> keys;
 
   /// The description of each label; null when the label stands alone.
   final List<Object?> criteria;
