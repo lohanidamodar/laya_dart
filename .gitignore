@@ -1,0 +1,6 @@
+.dart_tool/
+.tooling/
+.superpowers/
+models/
+build/
+pubspec.lock
