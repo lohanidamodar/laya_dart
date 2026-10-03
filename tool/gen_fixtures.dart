@@ -130,4 +130,9 @@ Future<void> main() async {
     '$ref/echo_model.py',
     'test/fixtures/ort/echo.onnx',
   ], '.tooling/logs/echo_model.txt');
+  // A graph with the Laya decision graph's signature, for OrtBackend's tests.
+  await _run([
+    '$ref/laya_stub_model.py',
+    'test/fixtures/ort/laya_stub.onnx',
+  ], '.tooling/logs/laya_stub_model.txt');
 }
