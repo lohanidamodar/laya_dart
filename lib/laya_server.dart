@@ -16,4 +16,5 @@ export 'src/model/checkpoint.dart' show CheckpointConfig, CheckpointSpec;
 export 'src/model/question.dart'
     show ChoiceQuestion, NoulQuestion, Question, QuestionType, ScoreQuestion;
 export 'src/server/errors.dart' show ApiException;
+export 'src/store/model_store.dart' show ModelStore, PinnedFile;
 export 'src/tokenizer/tokenizer.dart' show LayaTokenizer;
