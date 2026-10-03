@@ -5,3 +5,5 @@ decision model behind a Jev-compatible HTTP API, modelled on the `laya-serve`
 project.
 
 Status: research and first implementation in progress.
+
+This is an independent port; it is not affiliated with Convai Innovations or TypeSafe.

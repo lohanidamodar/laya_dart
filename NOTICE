@@ -1,0 +1,13 @@
+laya_server
+Copyright 2026 PopupBits
+
+This product includes software derived from "laya"
+(https://github.com/NandhaKishorM/laya), Copyright Convai Innovations,
+licensed under the Apache License, Version 2.0. The sequence format, answer
+decoding, checkpoint router and language analysis in lib/src/model/,
+lib/src/routing/ and lib/src/server/ are ports of laya's Python sources at
+commit fa9a2a7070b1789912a49ae24603bbfb1a78b001, modified for Dart.
+
+The Laya model weights are not distributed with this package. They are
+published by Convai Innovations under Apache-2.0; the ONNX conversions used
+are published by onnx-community under Apache-2.0.
