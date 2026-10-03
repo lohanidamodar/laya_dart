@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:laya_server/laya_server.dart';
+import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
 import 'support/checkpoints.dart';
@@ -30,11 +31,15 @@ class _Tracked implements InferenceBackend {
     }
   }
 
+  /// Makes [close] throw after marking the backend closed.
+  bool failClose = false;
+
   @override
   Future<void> close() async {
     if (running > 0) closedWhileRunning++;
     closed = true;
     await _inner.close();
+    if (failClose) throw StateError('release failed');
   }
 }
 
@@ -55,19 +60,25 @@ void main() {
     late Map<String, List<_Tracked>> backends;
     Duration runDelay = Duration.zero;
     Duration loadDelay = Duration.zero;
+    var failLoads = <String>{};
+    var failCloses = <String>{};
 
     setUp(() {
       loads = [];
       backends = {};
       runDelay = Duration.zero;
       loadDelay = Duration.zero;
+      failLoads = {};
+      failCloses = {};
     });
 
     // Every fake checkpoint shares the English tokenizer: routing and residency are under test.
     Future<LayaAgent> loader(String name) async {
       loads.add(name);
       await Future<void>.delayed(loadDelay);
-      final backend = _Tracked(name, delay: runDelay);
+      if (failLoads.contains(name)) throw StateError('$name is not installed');
+      final backend = _Tracked(name, delay: runDelay)
+        ..failClose = failCloses.contains(name);
       (backends[name] ??= []).add(backend);
       final spec = CheckpointSpec.all[name]!;
       return LayaAgent(
@@ -243,6 +254,48 @@ void main() {
       ]);
       expect(results, hasLength(8));
       expect(loads, ['english']);
+    });
+
+    test('a failed load evicts nothing', () async {
+      failLoads = {'typed-decisions'};
+      final engine = LayaEngine(loader: loader, maxLoaded: 2);
+      addTearDown(engine.close);
+      await routing(engine, _english);
+      await routing(engine, _hindi);
+      await expectLater(
+        engine.predict(
+          _english,
+          _questions,
+          const PredictOptions(task: 'typed'),
+        ),
+        throwsStateError,
+      );
+      await pumpEventQueue();
+      expect(engine.loaded, ['english', 'multilingual']);
+      expect(backends['english']!.single.closed, isFalse);
+      expect(backends['multilingual']!.single.closed, isFalse);
+      expect(loads, ['english', 'multilingual', 'typed-decisions']);
+    });
+
+    test('a failing backend close is logged as a warning', () async {
+      failCloses = {'english'};
+      final records = <LogRecord>[];
+      final sub = Logger.root.onRecord
+          .where((r) => r.loggerName == 'laya_server.engine')
+          .listen(records.add);
+      addTearDown(sub.cancel);
+      final engine = LayaEngine(loader: loader, maxLoaded: 1);
+      addTearDown(engine.close);
+      await routing(engine, _english);
+      await routing(engine, _hindi); // evicts english, whose close throws
+      await pumpEventQueue();
+      expect(backends['english']!.single.closed, isTrue);
+      expect(records, hasLength(1));
+      final r = records.single;
+      expect(r.level, Level.WARNING);
+      expect(r.message, contains('english'));
+      expect(r.error, isA<StateError>());
+      expect(r.stackTrace, isNotNull);
     });
 
     test('a failed load is retried on the next request', () async {

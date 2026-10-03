@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 
 import 'inference/ort_backend.dart';
@@ -53,6 +54,8 @@ class PredictOptions {
   /// The abstention threshold, already validated to [0, 1].
   final double? minConfidence;
 }
+
+final _log = Logger('laya_server.engine');
 
 /// The public Hugging Face ids a client may send as `model`, from laya's
 /// `STANDALONE_MODELS` without the bundle repo (`laya/serve.py`
@@ -106,7 +109,9 @@ class LayaEngine {
   /// Creates an engine that loads checkpoints with [loader] (see
   /// [fileLoader]).
   ///
-  /// [maxLoaded] (at least 1) bounds the resident checkpoints.
+  /// [maxLoaded] (at least 1) bounds the resident checkpoints; the least
+  /// recently used is evicted only once another load succeeds. Loads run
+  /// concurrently, so peak memory can briefly exceed [maxLoaded] checkpoints.
   /// [defaultModel] answers a state whose language nothing identifies, and
   /// [autoTaskDetection] lets a typed-decisions question schema select that
   /// checkpoint. Throws [ArgumentError] for a [maxLoaded] below 1 or an
@@ -294,7 +299,12 @@ class LayaEngine {
       final created = slot = _Slot(_loader(name));
       unawaited(
         created.agent.then<void>(
-          (_) => created.ready = true,
+          (_) {
+            created.ready = true;
+            // As laya (router.py:640-649): evict only once a load succeeds,
+            // so a failing load never costs a healthy checkpoint.
+            if (identical(_slots[name], created)) _trim(created);
+          },
           onError: (Object _) {
             // A failed load is forgotten so the next request retries it.
             if (identical(_slots[name], created)) _slots.remove(name);
@@ -304,11 +314,20 @@ class LayaEngine {
     }
     _slots[name] = slot;
     slot.inUse++;
-    while (_slots.length > _maxLoaded) {
-      final oldest = _slots.keys.first;
-      _evict(_slots.remove(oldest)!);
-    }
     return slot;
+  }
+
+  /// Evicts the least recently used loaded checkpoints, never [loaded]
+  /// itself, until at most `maxLoaded` are loaded. Checkpoints still loading
+  /// do not count.
+  void _trim(_Slot loaded) {
+    var ready = _slots.values.where((s) => s.ready).length;
+    for (final e in _slots.entries.toList()) {
+      if (ready <= _maxLoaded) break;
+      if (!e.value.ready || identical(e.value, loaded)) continue;
+      _evict(_slots.remove(e.key)!);
+      ready--;
+    }
   }
 
   void _release(_Slot slot) {
@@ -325,10 +344,22 @@ class LayaEngine {
 
   void _closeBackend(_Slot slot) => unawaited(() async {
     try {
-      await (await slot.agent).backend.close();
-    } catch (_) {
-      // A failed load has nothing to close, and a failing close has no caller
-      // left to tell.
+      final LayaAgent agent;
+      try {
+        agent = await slot.agent;
+      } catch (_) {
+        return; // A failed load has nothing to close; its request saw why.
+      }
+      try {
+        await agent.backend.close();
+      } catch (error, stackTrace) {
+        // No request is left to tell, but a failed close can leak a session.
+        _log.warning(
+          'closing evicted checkpoint ${agent.spec.name} failed',
+          error,
+          stackTrace,
+        );
+      }
     } finally {
       _draining.remove(slot);
       slot.closed.complete();
