@@ -3,8 +3,8 @@ description: >-
   Run the open Laya decision model locally with ONNX Runtime and serve it over a
   Jev-compatible (TypeSafe System One) HTTP API. Pure Dart, no Python.
 version: 0.1.0-dev.1
-repository: https://github.com/popupbits/laya_server
-issue_tracker: https://github.com/popupbits/laya_server/issues
+repository: https://github.com/lohanidamodar/laya_dart
+issue_tracker: https://github.com/lohanidamodar/laya_dart/issues
 topics: [ai, onnx, classification, server, ffi]
 environment:
   sdk: ^3.10.0
