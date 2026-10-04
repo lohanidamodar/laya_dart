@@ -209,3 +209,48 @@ Behind a reverse proxy mounted at a prefix, set `LAYA_ROOT_PATH=/laya`. A
 request path carrying the prefix is served with the prefix removed
 (`/laya/v1/systemone`), and one without it is served as is (`/v1/systemone`).
 Redirects keep the prefix.
+
+## Measured parity
+
+Measured on 2026-10-04 by `tool/parity.dart` and `test/parity/parity_test.dart`
+(tag `model`). laya-serve 0.3.24 (`laya.serve.create_app` under Starlette's
+`TestClient`, torch 2.14.1 on CPU) ran the upstream weights at revision
+`55cf4c4e`. laya_server ran the real handler over
+`LayaEngine.fileLoader('models')` on the onnx-community fp32 graphs. Every
+request in `tool/reference/cases.json` was sent auto-routed, pinned to
+`english` and pinned to `multilingual`. Each response was compared after
+laya's 4-decimal rounding:
+
+- statuses, key sets and strings must be equal;
+- numbers must be within 2e-4;
+- `usage` and `routing` must be exactly equal.
+
+| Checkpoint | Cases (200 / 422) | Numbers compared | Max \|Δp\| | `choice` near-ties |
+| --- | --- | --- | --- | --- |
+| english | 65 (63 / 2) | 1024 | 0 | 0 |
+| multilingual | 40 (39 / 1) | 572 | 0 | 0 |
+
+Every case matched, and every probability, score and confidence was identical
+after rounding. Before rounding, torch and ONNX Runtime differ by at most
+1.2e-5 (english) and 4.0e-5 (multilingual) in a logit, and by about 2e-6 in a
+probability. No auto-routed request landed on typed-decisions.
+
+**typed-decisions was not tested on real weights.** Its weights were not
+downloaded, and its parity test skips and says so.
+
+Latency is for one request on each checkpoint: request 23 of `cases.json`,
+which has a choice, a score and a noul question on an email state (3 × 96
+tokens on english, 3 × 112 on multilingual). Each figure is the median of 20
+after a warm-up, timed in-process through each server's HTTP handler, with
+torch's and ONNX Runtime's intra-op threads at the 24 physical cores of an
+Intel i9-14900HX (Windows 11). Peak RSS is each process's peak working set,
+with one checkpoint loaded.
+
+| Checkpoint | laya-serve (torch) | laya_server (ONNX Runtime) | Peak RSS, laya-serve / laya_server |
+| --- | --- | --- | --- |
+| english | 672 ms | 1261 ms | 2758 / 1811 MiB |
+| multilingual | 277 ms | 725 ms | 2245 / 1128 MiB |
+
+The gap is ONNX Runtime's, not the Dart wrapper's. Python's `onnxruntime`
+1.30 runs the same graph on the same batch in 1186 ms (english) and 660 ms
+(multilingual). laya_server uses about 35–50% less memory.

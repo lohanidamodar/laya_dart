@@ -571,6 +571,16 @@ as `Suarify/…` (Apache-2.0).
      `task`/auto-task routing.
    - Out: `POST /v1/systemone/batch` and `GET /v1/models`, deferred until after
      v1.
+7. **Measured parity (2026-10-04, Task 17)**: laya_server matches laya-serve
+   on real weights.
+   - Cases: 65 english and 40 multilingual, all matched.
+   - Max |Δp| after rounding: 0 on both checkpoints. Before rounding, the max
+     logit drift is 1.2e-5 and 4.0e-5.
+   - Median latency, laya-serve vs laya_server: english 672 ms vs 1261 ms,
+     multilingual 277 ms vs 725 ms (24 threads). The gap is ONNX Runtime's own.
+   - typed-decisions was not tested on real weights.
+
+   See `doc/api.md`, "Measured parity".
 
 The options as they were put:
 

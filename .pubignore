@@ -16,3 +16,5 @@ CLAUDE.md
 # stay in git for contributors.
 tool/reference/
 test/fixtures/tokenizers/
+# Real-weight parity recordings; without them the model-tagged parity test skips.
+test/fixtures/parity_*.json
