@@ -11,17 +11,17 @@ import 'render.dart' show pyRepr;
 sealed class ConfidenceThreshold {
   const ConfidenceThreshold();
 
-  /// One threshold, in [0, 1], for every answer.
+  /// One threshold, in 0 to 1, for every answer.
   const factory ConfidenceThreshold.scalar(double value) = ScalarThreshold;
 
-  /// Per-bucket thresholds, in [0, 1], keyed like `"choice:3-5"`, with an
+  /// Per-bucket thresholds, in 0 to 1, keyed like `"choice:3-5"`, with an
   /// optional `"default"` for the buckets not named.
   const factory ConfidenceThreshold.buckets(Map<String, double> thresholds) =
       BucketThresholds;
 
   /// laya `check_min_confidence`: [value] decoded from JSON, as a threshold.
   ///
-  /// A number in [0, 1] gives a [ScalarThreshold]; a non-empty map of string
+  /// A number in 0 to 1 gives a [ScalarThreshold]; a non-empty map of string
   /// keys to such numbers gives a [BucketThresholds]. Throws [ArgumentError]
   /// with laya's message for anything else (a bool is not a number here).
   static ConfidenceThreshold check(Object? value) {
@@ -85,7 +85,7 @@ sealed class ConfidenceThreshold {
 
 /// One threshold for every answer.
 final class ScalarThreshold extends ConfidenceThreshold {
-  /// Wraps [value], which the caller has checked is in [0, 1].
+  /// Wraps [value], which the caller has checked is in 0 to 1.
   const ScalarThreshold(this.value);
 
   /// The threshold.
@@ -110,7 +110,7 @@ final class ScalarThreshold extends ConfidenceThreshold {
 
 /// One threshold per option-count bucket (laya #394).
 final class BucketThresholds extends ConfidenceThreshold {
-  /// Wraps [thresholds], which the caller has checked are in [0, 1].
+  /// Wraps [thresholds], which the caller has checked are in 0 to 1.
   const BucketThresholds(this.thresholds);
 
   /// Thresholds keyed by bucket (`choice:2`, `choice:3-5`, `choice:6-10`,
