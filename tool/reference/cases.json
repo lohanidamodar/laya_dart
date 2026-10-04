@@ -1,0 +1,1181 @@
+{
+  "texts": [
+    "Hello world",
+    "The quick brown fox jumps over the lazy dog.",
+    "don't",
+    "I'll be there, won't you?",
+    "She's said they'd've known it's y'all's.",
+    "$1,234.56",
+    "Call 555-0199 or +1 (800) 555-0000 before 12:30pm on 2024-01-05.",
+    "3.14159 and 1e10 and 007 and 1,000,000",
+    "https://example.com/path/to?q=1&r=two#frag",
+    "Email me at jane.doe+tag@example.co.uk",
+    "if (x) { return y; }",
+    "def f(a, b):\n    return a**b  # power",
+    "<div class=\"x\">&amp;</div>",
+    "मुझसे दो बार शुल्क लिया गया",
+    "नमस्ते, आप कैसे हैं?",
+    "我被收了两次费用，请帮我退款。",
+    "二重に請求されました。返金してください。",
+    "두 번 청구되었습니다. 환불해 주세요.",
+    "تم خصم المبلغ مرتين من حسابي",
+    "С меня дважды списали деньги.",
+    "Χρεώθηκα δύο φορές για την ίδια παραγγελία.",
+    "ฉันถูกเรียกเก็บเงินสองครั้ง",
+    "¿Por qué me cobraron dos veces? Está mal, señor.",
+    "Mein Konto wurde zweimal belastet. Größe, übermäßig, schön.",
+    "Tôi bị tính phí hai lần, vui lòng hoàn tiền.",
+    "Je voudrais annuler ma commande, s'il vous plaît.",
+    "Quero cancelar minha assinatura",
+    "שלום עולם",
+    "I love it 😀🎉",
+    "👩‍👩‍👧",
+    "🇳🇵",
+    "👍🏽",
+    "Done ✔️ failed ❌",
+    "😀😀😀",
+    "é",
+    "é",
+    "Café",
+    "Café",
+    "Ångström",
+    "naïve coöperate façade",
+    "a\r\nb\tc",
+    "a\u0000b",
+    "a​b",
+    " nbsp ",
+    "fullwidth ＡＢＣ１２３",
+    "ﬁ ligature",
+    "math ∑∫√ and ½ ¾",
+    "currency €100 £50 ¥1000 ₹500",
+    "Mixed English and 日本語 text",
+    "line1\nline2\n\nline4\n",
+    "repeated!!!!!!???....",
+    "UPPER CASE TEXT and MiXeD cAsE",
+    "ID: A1B2-C3D4, SKU#9981",
+    " ",
+    "x y",
+    "x  y",
+    "x   y",
+    "x    y",
+    "x     y",
+    "x      y",
+    "x        y",
+    "x          y",
+    "x                y",
+    "x                       y",
+    "x                        y",
+    "x                         y",
+    "x                              y",
+    "   leading spaces",
+    "trailing spaces   ",
+    "  both  ",
+    "Use [MASK] here",
+    "Use <mask> here",
+    "[MASK]",
+    "<mask>",
+    "[CLS] x [SEP]",
+    "<bos>hi<eos>",
+    "",
+    "The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges in the ledger, opened a ticket, and asked finance to review the duplicate. Finance replied that refunds over $500 need a manager's approval, which can take 3-5 business days. Meanwhile the customer asked whether the subscription would be cancelled if the dispute went to the bank.The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges in the ledger, opened a ticket, and asked finance to review the duplicate. Finance replied that refunds over $500 need a manager's approval, which can take 3-5 business days. Meanwhile the customer asked whether the subscription would be cancelled if the dispute went to the bank.The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges in the ledger, opened a ticket, and asked finance to review the duplicate. Finance replied that refunds over $500 need a manager's approval, which can take 3-5 business days. Meanwhile the customer asked whether the subscription would be cancelled if the dispute went to the bank.The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges in the ledger, opened a ticket, and asked finance to review the duplicate. Finance replied that refunds over $500 need a manager's approval, which can take 3-5 business days. Meanwhile the customer asked whether the subscription would be cancelled if the dispute went to the bank.The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges in the ledger, opened a ticket, and asked finance to review the duplicate. Finance replied that refunds over $500 need a manager's approval, which can take 3-5 business days. Meanwhile the customer asked whether the subscription would be cancelled if the dispute went to the bank.The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges in the ledger, opened a ticket, and asked finance to review the duplicate. Finance replied that refunds over $500 need a manager's approval, which can take 3-5 business days. Meanwhile the customer asked whether the subscription would be cancelled if the dispute went to the bank.The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges in the ledger, opened a ticket, and asked finance to review the duplicate. Finance replied that refunds over $500 need a manager's approval, which can take 3-5 business days. Meanwhile the customer asked whether the subscription would be cancelled if the dispute went to the bank.The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges ",
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "|||IP_ADDRESS|||",
+    "choice question: Which department should handle this request?",
+    "next\u0085line and a\u0085 b",
+    "a \u0085b and c \u0085\u0085 d",
+    "mongolian᠎vowel a ᠎ b",
+    "﻿bom and a ﻿ b",
+    "x𐥀y",
+    "x𑶰y"
+  ],
+  "states": [
+    "Hello, I was charged twice for my order and I want a refund.",
+    "Mein Konto wurde zweimal belastet",
+    {
+      "from": "a@b.c",
+      "subject": "Hi",
+      "body": "Please reset my password, I can't log in since yesterday."
+    },
+    {
+      "metrics": {
+        "a": 0.1,
+        "b": 0.00001,
+        "c": 10000000000000000.0,
+        "d": 1e-7,
+        "e": 123456789.123,
+        "f": -0.0,
+        "g": 2.5,
+        "h": 1.0
+      },
+      "list": [
+        0.1,
+        [
+          0.00001,
+          {
+            "x": 2.5
+          }
+        ]
+      ]
+    },
+    {
+      "id": 9007199254740993,
+      "ok": true,
+      "no": false,
+      "none": null,
+      "n": -42
+    },
+    {
+      "名前": "田中",
+      "ключ": "значение",
+      "clé": "valeur",
+      "emoji😀": "x"
+    },
+    [
+      {
+        "role": "user",
+        "text": "Turn 0: I still have not received the refund for order #1000, and the tracking page says the parcel was returned to the warehouse last week."
+      },
+      {
+        "role": "agent",
+        "text": "Turn 1: Thanks for your patience. I can see order #1000 in our system; the refund was issued but the bank may take a few more days to post it."
+      },
+      {
+        "role": "user",
+        "text": "Turn 2: I still have not received the refund for order #1002, and the tracking page says the parcel was returned to the warehouse last week."
+      },
+      {
+        "role": "agent",
+        "text": "Turn 3: Thanks for your patience. I can see order #1002 in our system; the refund was issued but the bank may take a few more days to post it."
+      },
+      {
+        "role": "user",
+        "text": "Turn 4: I still have not received the refund for order #1004, and the tracking page says the parcel was returned to the warehouse last week."
+      },
+      {
+        "role": "agent",
+        "text": "Turn 5: Thanks for your patience. I can see order #1004 in our system; the refund was issued but the bank may take a few more days to post it."
+      },
+      {
+        "role": "user",
+        "text": "Turn 6: I still have not received the refund for order #1006, and the tracking page says the parcel was returned to the warehouse last week."
+      },
+      {
+        "role": "agent",
+        "text": "Turn 7: Thanks for your patience. I can see order #1006 in our system; the refund was issued but the bank may take a few more days to post it."
+      },
+      {
+        "role": "user",
+        "text": "Turn 8: I still have not received the refund for order #1008, and the tracking page says the parcel was returned to the warehouse last week."
+      },
+      {
+        "role": "agent",
+        "text": "Turn 9: Thanks for your patience. I can see order #1008 in our system; the refund was issued but the bank may take a few more days to post it."
+      },
+      {
+        "role": "user",
+        "text": "Turn 10: I still have not received the refund for order #1010, and the tracking page says the parcel was returned to the warehouse last week."
+      },
+      {
+        "role": "agent",
+        "text": "Turn 11: Thanks for your patience. I can see order #1010 in our system; the refund was issued but the bank may take a few more days to post it."
+      },
+      {
+        "role": "user",
+        "text": "Turn 12: I still have not received the refund for order #1012, and the tracking page says the parcel was returned to the warehouse last week."
+      },
+      {
+        "role": "agent",
+        "text": "Turn 13: Thanks for your patience. I can see order #1012 in our system; the refund was issued but the bank may take a few more days to post it."
+      },
+      {
+        "role": "user",
+        "text": "Turn 14: I still have not received the refund for order #1014, and the tracking page says the parcel was returned to the warehouse last week."
+      },
+      {
+        "role": "agent",
+        "text": "Turn 15: Thanks for your patience. I can see order #1014 in our system; the refund was issued but the bank may take a few more days to post it."
+      },
+      {
+        "role": "user",
+        "text": "Turn 16: I still have not received the refund for order #1016, and the tracking page says the parcel was returned to the warehouse last week."
+      },
+      {
+        "role": "agent",
+        "text": "Turn 17: Thanks for your patience. I can see order #1016 in our system; the refund was issued but the bank may take a few more days to post it."
+      },
+      {
+        "role": "user",
+        "text": "Turn 18: I still have not received the refund for order #1018, and the tracking page says the parcel was returned to the warehouse last week."
+      },
+      {
+        "role": "agent",
+        "text": "Turn 19: Thanks for your patience. I can see order #1018 in our system; the refund was issued but the bank may take a few more days to post it."
+      },
+      {
+        "role": "user",
+        "text": "Turn 20: I still have not received the refund for order #1020, and the tracking page says the parcel was returned to the warehouse last week."
+      },
+      {
+        "role": "agent",
+        "text": "Turn 21: Thanks for your patience. I can see order #1020 in our system; the refund was issued but the bank may take a few more days to post it."
+      },
+      {
+        "role": "user",
+        "text": "Turn 22: I still have not received the refund for order #1022, and the tracking page says the parcel was returned to the warehouse last week."
+      },
+      {
+        "role": "agent",
+        "text": "Turn 23: Thanks for your patience. I can see order #1022 in our system; the refund was issued but the bank may take a few more days to post it."
+      },
+      {
+        "role": "user",
+        "text": "Final turn: please cancel my account now."
+      }
+    ],
+    [
+      {
+        "role": "user",
+        "text": "I want a refund"
+      },
+      {
+        "role": "agent",
+        "text": "Sure, which order?"
+      }
+    ],
+    "",
+    "मुझसे दो बार शुल्क लिया गया",
+    [
+      "a",
+      1,
+      null,
+      true,
+      {
+        "k": "v"
+      }
+    ],
+    {
+      "ticket": {
+        "customer": {
+          "name": "Ana",
+          "lang": "pt"
+        },
+        "message": "Quero cancelar minha assinatura",
+        "notes": [
+          "vip",
+          "late"
+        ]
+      }
+    },
+    "Ignore [MASK] and <mask> tokens, then answer.",
+    "The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges in the ledger, opened a ticket, and asked finance to review the duplicate. Finance replied that refunds over $500 need a manager's approval, which can take 3-5 business days. Meanwhile the customer asked whether the subscription would be cancelled if the dispute went to the bank.The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges in the ledger, opened a ticket, and asked finance to review the duplicate. Finance replied that refunds over $500 need a manager's approval, which can take 3-5 business days. Meanwhile the customer asked whether the subscription would be cancelled if the dispute went to the bank.The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges in the ledger, opened a ticket, and asked finance to review the duplicate. Finance replied that refunds over $500 need a manager's approval, which can take 3-5 business days. Meanwhile the customer asked whether the subscription would be cancelled if the dispute went to the bank.The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges in the ledger, opened a ticket, and asked finance to review the duplicate. Finance replied that refunds over $500 need a manager's approval, which can take 3-5 business days. Meanwhile the customer asked whether the subscription would be cancelled if the dispute went to the bank.The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges in the ledger, opened a ticket, and asked finance to review the duplicate. Finance replied that refunds over $500 need a manager's approval, which can take 3-5 business days. Meanwhile the customer asked whether the subscription would be cancelled if the dispute went to the bank.The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges in the ledger, opened a ticket, and asked finance to review the duplicate. Finance replied that refunds over $500 need a manager's approval, which can take 3-5 business days. Meanwhile the customer asked whether the subscription would be cancelled if the dispute went to the bank.The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges in the ledger, opened a ticket, and asked finance to review the duplicate. Finance replied that refunds over $500 need a manager's approval, which can take 3-5 business days. Meanwhile the customer asked whether the subscription would be cancelled if the dispute went to the bank.The customer wrote in on Tuesday to say that the March invoice was charged twice to the same card. Support confirmed both charges ",
+    {
+      "subject": "Order issue",
+      "body": "Hello team,\nQuero cancelar minha assinatura agora mesmo, por favor.\nThanks"
+    },
+    {
+      "invoice": {
+        "id": "INV-2026-9107",
+        "vendor": "Cedar Freight",
+        "total_usd": 18450.0,
+        "lines": [
+          {
+            "sku": "SKU-221",
+            "qty": 300,
+            "unit_usd": 61.5
+          }
+        ]
+      },
+      "purchase_order": {
+        "id": "PO-3477",
+        "total_usd": 18450.0
+      }
+    }
+  ],
+  "requests": [
+    {
+      "state": 0,
+      "questions": {
+        "refund": {
+          "type": "noul",
+          "instructions": "The customer wants a refund."
+        }
+      }
+    },
+    {
+      "state": 0,
+      "questions": {
+        "refund": {
+          "type": "noul",
+          "instructions": "The customer wants a refund.",
+          "criteria": {
+            "true": "They ask for their money back.",
+            "false": "There is no refund request."
+          }
+        }
+      }
+    },
+    {
+      "state": 0,
+      "questions": {
+        "refund": {
+          "type": "noul",
+          "instructions": "The customer wants a refund.",
+          "criteria": {
+            "True": "They ask for their money back.",
+            "FALSE": "There is no refund request."
+          }
+        }
+      }
+    },
+    {
+      "state": 1,
+      "questions": {
+        "angry": {
+          "type": "noul",
+          "instructions": "The customer is angry.",
+          "criteria": {
+            "true": "",
+            "false": null
+          },
+          "labels": {
+            "false": "calm",
+            "true": "angry"
+          }
+        }
+      }
+    },
+    {
+      "state": 0,
+      "questions": {
+        "refund": {
+          "type": "noul",
+          "instructions": "The customer wants a refund.",
+          "criteria": {
+            "true": {
+              "desc": "money back",
+              "examples": [
+                "refund please"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "state": 2,
+      "questions": {
+        "urgent": {
+          "type": "score",
+          "instructions": "How urgent is this?",
+          "criteria": [
+            "not urgent",
+            "urgent"
+          ]
+        }
+      }
+    },
+    {
+      "state": 2,
+      "questions": {
+        "urgency": {
+          "type": "score",
+          "instructions": "How urgent is this?",
+          "criteria": [
+            "Level 0 of 5: none",
+            "Level 1 of 5: more",
+            "Level 2 of 5: more",
+            "Level 3 of 5: more",
+            "Level 4 of 5: more"
+          ]
+        }
+      }
+    },
+    {
+      "state": 3,
+      "questions": {
+        "quality": {
+          "type": "score",
+          "instructions": "Rate the data quality.",
+          "criteria": [
+            "Level 0 of 10: none",
+            "Level 1 of 10: more",
+            "Level 2 of 10: more",
+            "Level 3 of 10: more",
+            "Level 4 of 10: more",
+            "Level 5 of 10: more",
+            "Level 6 of 10: more",
+            "Level 7 of 10: more",
+            "Level 8 of 10: more",
+            "Level 9 of 10: more"
+          ]
+        }
+      }
+    },
+    {
+      "state": 4,
+      "questions": {
+        "risk": {
+          "type": "score",
+          "instructions": "How risky is this record?",
+          "criteria": [
+            {
+              "desc": "low",
+              "examples": [
+                "ok"
+              ]
+            },
+            {
+              "desc": "high",
+              "weight": 2.5
+            },
+            1,
+            2.5
+          ]
+        }
+      }
+    },
+    {
+      "state": 0,
+      "questions": {
+        "department": {
+          "type": "choice",
+          "instructions": "Which department should handle this request?",
+          "criteria": {
+            "billing": "Payment and invoice issues",
+            "technical": "Bugs and outages",
+            "other": null
+          }
+        }
+      }
+    },
+    {
+      "state": 0,
+      "questions": {
+        "yesno": {
+          "type": "choice",
+          "instructions": "Is this a billing problem?",
+          "criteria": [
+            "yes",
+            "no"
+          ]
+        }
+      }
+    },
+    {
+      "state": 2,
+      "questions": {
+        "topic": {
+          "type": "choice",
+          "instructions": "What is the topic?",
+          "criteria": [
+            "account",
+            "billing",
+            "shipping",
+            "other"
+          ]
+        }
+      }
+    },
+    {
+      "state": 11,
+      "questions": {
+        "intent": {
+          "type": "choice",
+          "instructions": "What does the customer intend?",
+          "criteria": {
+            "intent_0": "Description for intent_0",
+            "intent_1": "Description for intent_1",
+            "intent_2": "Description for intent_2",
+            "intent_3": "Description for intent_3",
+            "intent_4": "Description for intent_4",
+            "intent_5": "Description for intent_5",
+            "intent_6": "Description for intent_6",
+            "intent_7": "Description for intent_7"
+          }
+        }
+      }
+    },
+    {
+      "state": 5,
+      "questions": {
+        "bucket": {
+          "type": "choice",
+          "instructions": "Pick a bucket.",
+          "criteria": [
+            "bucket0",
+            "bucket1",
+            "bucket2",
+            "bucket3",
+            "bucket4",
+            "bucket5",
+            "bucket6",
+            "bucket7",
+            "bucket8",
+            "bucket9",
+            "bucket10",
+            "bucket11"
+          ]
+        }
+      }
+    },
+    {
+      "state": 0,
+      "questions": {
+        "code": {
+          "type": "choice",
+          "instructions": "Pick a code.",
+          "criteria": [
+            "code-0",
+            "code-1",
+            "code-2",
+            "code-3",
+            "code-4",
+            "code-5",
+            "code-6",
+            "code-7",
+            "code-8",
+            "code-9",
+            "code-10",
+            "code-11",
+            "code-12",
+            "code-13",
+            "code-14",
+            "code-15",
+            "code-16",
+            "code-17",
+            "code-18",
+            "code-19",
+            "code-20",
+            "code-21",
+            "code-22",
+            "code-23",
+            "code-24",
+            "code-25",
+            "code-26",
+            "code-27",
+            "code-28",
+            "code-29",
+            "code-30",
+            "code-31",
+            "code-32",
+            "code-33",
+            "code-34",
+            "code-35",
+            "code-36",
+            "code-37",
+            "code-38",
+            "code-39",
+            "code-40",
+            "code-41",
+            "code-42",
+            "code-43",
+            "code-44",
+            "code-45",
+            "code-46",
+            "code-47",
+            "code-48",
+            "code-49",
+            "code-50",
+            "code-51",
+            "code-52",
+            "code-53",
+            "code-54",
+            "code-55",
+            "code-56",
+            "code-57",
+            "code-58",
+            "code-59"
+          ]
+        }
+      }
+    },
+    {
+      "state": 0,
+      "questions": {
+        "label": {
+          "type": "choice",
+          "instructions": "Pick a label.",
+          "criteria": [
+            "label number 0",
+            "label number 1",
+            "label number 2",
+            "label number 3",
+            "label number 4",
+            "label number 5",
+            "label number 6",
+            "label number 7",
+            "label number 8",
+            "label number 9",
+            "label number 10",
+            "label number 11",
+            "label number 12",
+            "label number 13",
+            "label number 14",
+            "label number 15",
+            "label number 16",
+            "label number 17",
+            "label number 18",
+            "label number 19",
+            "label number 20",
+            "label number 21",
+            "label number 22",
+            "label number 23",
+            "label number 24",
+            "label number 25",
+            "label number 26",
+            "label number 27",
+            "label number 28",
+            "label number 29",
+            "label number 30",
+            "label number 31",
+            "label number 32",
+            "label number 33",
+            "label number 34",
+            "label number 35",
+            "label number 36",
+            "label number 37",
+            "label number 38",
+            "label number 39",
+            "label number 40",
+            "label number 41",
+            "label number 42",
+            "label number 43",
+            "label number 44",
+            "label number 45",
+            "label number 46",
+            "label number 47",
+            "label number 48",
+            "label number 49",
+            "label number 50",
+            "label number 51",
+            "label number 52",
+            "label number 53",
+            "label number 54",
+            "label number 55",
+            "label number 56",
+            "label number 57",
+            "label number 58",
+            "label number 59",
+            "label number 60",
+            "label number 61",
+            "label number 62",
+            "label number 63",
+            "label number 64",
+            "label number 65",
+            "label number 66",
+            "label number 67",
+            "label number 68",
+            "label number 69",
+            "label number 70",
+            "label number 71",
+            "label number 72",
+            "label number 73",
+            "label number 74",
+            "label number 75",
+            "label number 76",
+            "label number 77",
+            "label number 78",
+            "label number 79",
+            "label number 80",
+            "label number 81",
+            "label number 82",
+            "label number 83",
+            "label number 84",
+            "label number 85",
+            "label number 86",
+            "label number 87",
+            "label number 88",
+            "label number 89",
+            "label number 90",
+            "label number 91",
+            "label number 92",
+            "label number 93",
+            "label number 94",
+            "label number 95",
+            "label number 96",
+            "label number 97",
+            "label number 98",
+            "label number 99"
+          ]
+        }
+      }
+    },
+    {
+      "state": 0,
+      "questions": {
+        "route": {
+          "type": "choice",
+          "instructions": "Where should this go?",
+          "criteria": [
+            "Escalate to the billing department for a refund review, queue number 0",
+            "Escalate to the billing department for a refund review, queue number 1",
+            "Escalate to the billing department for a refund review, queue number 2",
+            "Escalate to the billing department for a refund review, queue number 3",
+            "Escalate to the billing department for a refund review, queue number 4",
+            "Escalate to the billing department for a refund review, queue number 5",
+            "Escalate to the billing department for a refund review, queue number 6",
+            "Escalate to the billing department for a refund review, queue number 7",
+            "Escalate to the billing department for a refund review, queue number 8",
+            "Escalate to the billing department for a refund review, queue number 9",
+            "Escalate to the billing department for a refund review, queue number 10",
+            "Escalate to the billing department for a refund review, queue number 11",
+            "Escalate to the billing department for a refund review, queue number 12",
+            "Escalate to the billing department for a refund review, queue number 13",
+            "Escalate to the billing department for a refund review, queue number 14",
+            "Escalate to the billing department for a refund review, queue number 15",
+            "Escalate to the billing department for a refund review, queue number 16",
+            "Escalate to the billing department for a refund review, queue number 17",
+            "Escalate to the billing department for a refund review, queue number 18",
+            "Escalate to the billing department for a refund review, queue number 19",
+            "Escalate to the billing department for a refund review, queue number 20",
+            "Escalate to the billing department for a refund review, queue number 21",
+            "Escalate to the billing department for a refund review, queue number 22",
+            "Escalate to the billing department for a refund review, queue number 23",
+            "Escalate to the billing department for a refund review, queue number 24",
+            "Escalate to the billing department for a refund review, queue number 25",
+            "Escalate to the billing department for a refund review, queue number 26",
+            "Escalate to the billing department for a refund review, queue number 27",
+            "Escalate to the billing department for a refund review, queue number 28",
+            "Escalate to the billing department for a refund review, queue number 29"
+          ]
+        }
+      }
+    },
+    {
+      "state": 0,
+      "questions": {
+        "odd": {
+          "type": "choice",
+          "instructions": "Pick one.",
+          "criteria": {
+            "1": "the first",
+            "": "an empty label",
+            "x": null,
+            "y": ""
+          }
+        },
+        "nums": {
+          "type": "choice",
+          "instructions": "Pick a number.",
+          "criteria": [
+            "1",
+            "2",
+            "3"
+          ]
+        }
+      }
+    },
+    {
+      "state": 2,
+      "questions": {
+        "objins": {
+          "type": "choice",
+          "instructions": {
+            "task": "classify the email",
+            "fields": [
+              "subject",
+              "body"
+            ],
+            "weight": 0.5
+          },
+          "criteria": [
+            "spam",
+            "ham"
+          ]
+        },
+        "listins": {
+          "type": "noul",
+          "instructions": [
+            "The email",
+            "asks for a reset."
+          ]
+        }
+      }
+    },
+    {
+      "state": 15,
+      "questions": {
+        "disposition": {
+          "type": "choice",
+          "instructions": "How should this vendor invoice be dispositioned?",
+          "criteria": {
+            "approve": "Matches the order and delivery; approve for payment.",
+            "hold": "Something needs confirming before payment; hold pending clarification.",
+            "manual_review": "A human in finance must review the discrepancy.",
+            "reject": "Should not be paid: duplicate, unauthorised or materially wrong."
+          }
+        },
+        "matches_order": {
+          "type": "noul",
+          "instructions": "The invoice reconciles with the purchase order and the recorded delivery.",
+          "criteria": {
+            "false": "There is a discrepancy against the order or the delivery.",
+            "true": "Line items, quantities and amounts reconcile."
+          }
+        },
+        "duplicate": {
+          "type": "noul",
+          "instructions": "This invoice appears to duplicate an invoice already submitted."
+        },
+        "discrepancy_severity": {
+          "type": "score",
+          "instructions": "How material is any discrepancy between the invoice, the order and the delivery?",
+          "criteria": [
+            "None: everything reconciles.",
+            "Trivial: rounding or a cosmetic difference.",
+            "Moderate: a real difference worth confirming.",
+            "Material: a large or unexplained difference."
+          ]
+        },
+        "urgency": {
+          "type": "score",
+          "instructions": "How time-sensitive is this?",
+          "criteria": [
+            "No time pressure; can wait indefinitely.",
+            "Routine; handle within the normal queue.",
+            "Elevated; should be handled within the same week.",
+            "Critical; requires action within the same day."
+          ]
+        }
+      }
+    },
+    {
+      "state": 0,
+      "questions": {
+        "action": {
+          "type": "choice",
+          "instructions": "What should the agent do next?",
+          "criteria": [
+            "refund",
+            "replace",
+            "escalate",
+            "close"
+          ]
+        },
+        "category": {
+          "type": "choice",
+          "instructions": "Which category is this?",
+          "criteria": [
+            "billing",
+            "shipping",
+            "product",
+            "account"
+          ]
+        },
+        "churn_risk": {
+          "type": "score",
+          "instructions": "How likely is the customer to churn?",
+          "criteria": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "needs_human": {
+          "type": "noul",
+          "instructions": "A human agent must take over."
+        },
+        "urgency": {
+          "type": "score",
+          "instructions": "How time-sensitive is this?",
+          "criteria": [
+            "No time pressure; can wait indefinitely.",
+            "Routine; handle within the normal queue.",
+            "Elevated; should be handled within the same week.",
+            "Critical; requires action within the same day."
+          ]
+        }
+      }
+    },
+    {
+      "state": 2,
+      "questions": {
+        "credential_compromise": {
+          "type": "noul",
+          "instructions": "Credentials appear to be compromised."
+        },
+        "disposition": {
+          "type": "choice",
+          "instructions": "How should the alert be handled?",
+          "criteria": [
+            "close",
+            "monitor",
+            "escalate"
+          ]
+        },
+        "severity": {
+          "type": "score",
+          "instructions": "How severe is the incident?",
+          "criteria": [
+            "Level 0 of 5: none",
+            "Level 1 of 5: more",
+            "Level 2 of 5: more",
+            "Level 3 of 5: more",
+            "Level 4 of 5: more"
+          ]
+        },
+        "true_positive": {
+          "type": "noul",
+          "instructions": "The alert is a true positive."
+        },
+        "urgency": {
+          "type": "score",
+          "instructions": "How time-sensitive is this?",
+          "criteria": [
+            "No time pressure; can wait indefinitely.",
+            "Routine; handle within the normal queue.",
+            "Elevated; should be handled within the same week.",
+            "Critical; requires action within the same day."
+          ]
+        }
+      }
+    },
+    {
+      "state": 7,
+      "questions": {
+        "action": {
+          "type": "choice",
+          "instructions": "What should happen to this trace?",
+          "criteria": [
+            "ignore",
+            "flag",
+            "block"
+          ]
+        },
+        "needs_review": {
+          "type": "noul",
+          "instructions": "A human should review this trace."
+        },
+        "outcome": {
+          "type": "choice",
+          "instructions": "What was the outcome?",
+          "criteria": [
+            "success",
+            "partial",
+            "failure"
+          ]
+        },
+        "risk": {
+          "type": "score",
+          "instructions": "How risky was the agent behaviour?",
+          "criteria": [
+            "Level 0 of 4: none",
+            "Level 1 of 4: more",
+            "Level 2 of 4: more",
+            "Level 3 of 4: more"
+          ]
+        },
+        "urgency": {
+          "type": "score",
+          "instructions": "How time-sensitive is this?",
+          "criteria": [
+            "No time pressure; can wait indefinitely.",
+            "Routine; handle within the normal queue.",
+            "Elevated; should be handled within the same week.",
+            "Critical; requires action within the same day."
+          ]
+        }
+      }
+    },
+    {
+      "state": 2,
+      "questions": {
+        "department": {
+          "type": "choice",
+          "instructions": "Which department should handle this request?",
+          "criteria": [
+            "billing",
+            "support",
+            "sales"
+          ]
+        },
+        "urgency": {
+          "type": "score",
+          "instructions": "How urgent is this?",
+          "criteria": [
+            "Level 0 of 5: none",
+            "Level 1 of 5: more",
+            "Level 2 of 5: more",
+            "Level 3 of 5: more",
+            "Level 4 of 5: more"
+          ]
+        },
+        "spam": {
+          "type": "noul",
+          "instructions": "This email is spam."
+        }
+      }
+    },
+    {
+      "state": 6,
+      "questions": {
+        "cancel": {
+          "type": "noul",
+          "instructions": "The customer asks to cancel their account."
+        },
+        "sentiment": {
+          "type": "choice",
+          "instructions": "Overall sentiment?",
+          "criteria": [
+            "positive",
+            "neutral",
+            "negative"
+          ]
+        },
+        "urgency": {
+          "type": "score",
+          "instructions": "How urgent is this?",
+          "criteria": [
+            "Level 0 of 3: none",
+            "Level 1 of 3: more",
+            "Level 2 of 3: more"
+          ]
+        }
+      }
+    },
+    {
+      "state": 13,
+      "questions": {
+        "dispute": {
+          "type": "noul",
+          "instructions": "The customer threatens a bank dispute."
+        }
+      }
+    },
+    {
+      "state": 9,
+      "questions": {
+        "department": {
+          "type": "choice",
+          "instructions": "Which department should handle this request?",
+          "criteria": {
+            "billing": "Payment issues",
+            "technical": "Bugs"
+          }
+        }
+      }
+    },
+    {
+      "state": 3,
+      "questions": {
+        "anomaly": {
+          "type": "score",
+          "instructions": "How anomalous are the metrics?",
+          "criteria": [
+            "Level 0 of 5: none",
+            "Level 1 of 5: more",
+            "Level 2 of 5: more",
+            "Level 3 of 5: more",
+            "Level 4 of 5: more"
+          ]
+        }
+      }
+    },
+    {
+      "state": 0,
+      "questions": {
+        "structured": {
+          "type": "choice",
+          "instructions": "Classify the request.",
+          "criteria": {
+            "refund": {
+              "desc": "wants money back",
+              "examples": [
+                "refund pls",
+                "charge me back"
+              ]
+            },
+            "other": {
+              "desc": "anything else",
+              "score": 0.1
+            }
+          }
+        }
+      }
+    },
+    {
+      "state": 12,
+      "questions": {
+        "masked": {
+          "type": "choice",
+          "instructions": "Which [MASK] applies? <mask>",
+          "criteria": {
+            "a [MASK] b": "has a [MASK] token",
+            "c <mask> d": "has a <mask> token"
+          }
+        }
+      }
+    },
+    {
+      "state": 0,
+      "questions": {
+        "ordered": {
+          "type": "choice",
+          "instructions": "Pick a colour.",
+          "criteria": [
+            "red",
+            "green",
+            "blue"
+          ],
+          "option_order": [
+            2,
+            0,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "state": 10,
+      "questions": {
+        "mixed": {
+          "type": "noul",
+          "instructions": "The list mentions a key."
+        }
+      }
+    },
+    {
+      "state": 8,
+      "questions": {
+        "empty": {
+          "type": "noul",
+          "instructions": "The state is empty."
+        }
+      }
+    },
+    {
+      "state": 14,
+      "questions": {
+        "department": {
+          "type": "choice",
+          "instructions": "Which department should handle this request?",
+          "criteria": [
+            "billing",
+            "cancellations"
+          ]
+        }
+      }
+    },
+    {
+      "state": 4,
+      "questions": {
+        "nulllevel": {
+          "type": "score",
+          "instructions": "A score with a null level.",
+          "criteria": [
+            "low",
+            null
+          ]
+        },
+        "nolabel": {
+          "type": "choice",
+          "instructions": "A choice with a null label.",
+          "criteria": [
+            "a",
+            null
+          ]
+        }
+      }
+    }
+  ]
+}

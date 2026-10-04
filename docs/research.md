@@ -442,7 +442,7 @@ No binaries are committed and no system-wide install is needed.
 **Weights**
 
 - Weights are never bundled.
-- A Dart CLI (`dart run laya_server:fetch`) downloads `tokenizer.json` and
+- A Dart CLI (`dart run laya_server:laya_fetch`) downloads `tokenizer.json` and
   `rl_agent_config.json` from HF at a pinned revision, plus our exported ONNX
   from wherever we host it.
 - It also documents running upstream's `export_onnx.py` yourself.
@@ -459,7 +459,7 @@ API tests run with a fake backend and no model.
    - `lib/`, the library: tokenizer, sequence, router, decode, ORT backend,
      shelf handler;
    - `bin/laya_server.dart`, the server executable;
-   - `bin/fetch.dart`;
+   - `bin/laya_fetch.dart`;
    - `example/`.
 
    A later split into `laya` (core) and `laya_server` (HTTP) is possible.
@@ -571,6 +571,16 @@ as `Suarify/…` (Apache-2.0).
      `task`/auto-task routing.
    - Out: `POST /v1/systemone/batch` and `GET /v1/models`, deferred until after
      v1.
+7. **Measured parity (2026-10-04, Task 17)**: laya_server matches laya-serve
+   on real weights.
+   - Cases: 65 english and 40 multilingual, all matched.
+   - Max |Δp| after rounding: 0 on both checkpoints. Before rounding, the max
+     logit drift is 1.2e-5 and 4.0e-5.
+   - Median latency, laya-serve vs laya_server: english 672 ms vs 1261 ms,
+     multilingual 277 ms vs 725 ms (24 threads). The gap is ONNX Runtime's own.
+   - typed-decisions was not tested on real weights.
+
+   See `doc/api.md`, "Measured parity".
 
 The options as they were put:
 

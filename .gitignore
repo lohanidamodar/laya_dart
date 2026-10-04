@@ -4,3 +4,4 @@
 models/
 build/
 pubspec.lock
+__pycache__/

@@ -1,0 +1,8 @@
+# Test tags. `ort` tests load ONNX Runtime through the build hook's bundled
+# library (or LAYA_ORT_LIB) and run by default; `model` tests need the real
+# Laya ONNX exports, which are downloaded separately.
+tags:
+  ort:
+  compat:
+  model:
+    skip: "needs downloaded models; run with --run-skipped -t model"

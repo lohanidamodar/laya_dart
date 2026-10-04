@@ -1,0 +1,20 @@
+# Replaces .gitignore for `dart pub publish`, so repeat its entries.
+.dart_tool/
+build/
+models/
+pubspec.lock
+__pycache__/
+
+# Local tooling and agent working files.
+.tooling/
+.superpowers/
+docs/
+AGENTS.md
+CLAUDE.md
+
+# Python reference scripts and the large committed tokenizer fixture; they
+# stay in git for contributors.
+tool/reference/
+test/fixtures/tokenizers/
+# Real-weight parity recordings; without them the model-tagged parity test skips.
+test/fixtures/parity_*.json
