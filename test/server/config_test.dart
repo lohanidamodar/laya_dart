@@ -35,7 +35,6 @@ void main() {
     expect(c.jevStrict, isFalse);
     expect(c.variant, 'fp32');
     expect(c.ortLibraryPath, isNull);
-    expect(c.logLevel, 'info');
   });
 
   test('reads every variable', () {
@@ -56,7 +55,6 @@ void main() {
       'LAYA_JEV_STRICT': 'on',
       'LAYA_ONNX_VARIANT': 'fp16',
       'LAYA_ORT_LIB': '/opt/ort/libonnxruntime.so',
-      'LAYA_LOG_LEVEL': 'debug',
     });
     expect(c.host, '127.0.0.1');
     expect(c.port, 8080);
@@ -74,7 +72,6 @@ void main() {
     expect(c.jevStrict, isTrue);
     expect(c.variant, 'fp16');
     expect(c.ortLibraryPath, '/opt/ort/libonnxruntime.so');
-    expect(c.logLevel, 'debug');
   });
 
   test('booleans are laya _env_bool: only 1/true/yes/on, any case', () {

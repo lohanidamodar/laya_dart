@@ -1,4 +1,5 @@
-/// The `fetch` command behind `bin/fetch.dart`, separated so tests can run it.
+/// The `laya_fetch` command behind `bin/laya_fetch.dart`, separated so tests
+/// can run it.
 library;
 
 import 'dart:io';
@@ -12,7 +13,7 @@ const _usageError = 64;
 
 String _mb(int bytes) => '${(bytes / (1 << 20)).toStringAsFixed(1)} MB';
 
-/// Runs `fetch` with [args] and returns its exit code: 0 on success, 1 on a
+/// Runs `laya_fetch` with [args] and returns its exit code: 0 on success, 1 on a
 /// failure (one sentence on [err]), 64 on a usage error.
 ///
 /// After each checkpoint installs, every file is hashed against its pin
@@ -42,7 +43,7 @@ Future<int> runFetch(
   void usage(IOSink sink) {
     sink
       ..writeln(
-        'Usage: dart run laya_server:fetch [options] '
+        'Usage: dart run laya_server:laya_fetch [options] '
         '<${[...names, 'all'].join('|')}>...',
       )
       ..writeln(parser.usage);
@@ -108,7 +109,7 @@ Future<int> runFetch(
           out.writeln();
           err.writeln(
             'fetch failed: $n has files that do not match their pinned '
-            'sha256: ${bad.join(', ')}; delete them and run fetch again.',
+            'sha256: ${bad.join(', ')}; delete them and run laya_fetch again.',
           );
           return 1;
         }

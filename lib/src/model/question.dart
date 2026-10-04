@@ -5,8 +5,10 @@
 /// byte for byte.
 library;
 
+import '../errors.dart';
 import '../json/python_json.dart';
-import '../server/errors.dart';
+import '../python/py_str.dart';
+import '../python/py_unicode.dart';
 import 'render.dart';
 
 /// Question type, with the head's type id.
@@ -52,7 +54,7 @@ sealed class Question {
     final q = _repr(id);
     Never fail(String message) => throw ApiException(422, message);
 
-    if (id.trim().isEmpty) {
+    if (pyStripStr(id).isEmpty) {
       fail('question id must be a non-empty string, got $q');
     }
     if (json is! Map) {
@@ -80,7 +82,7 @@ sealed class Question {
         'add the text the model should answer',
       );
     }
-    if ((ins is String && ins.trim().isEmpty) ||
+    if ((ins is String && pyStripStr(ins).isEmpty) ||
         (ins is List && ins.isEmpty) ||
         (ins is Map && ins.isEmpty)) {
       fail(
@@ -190,7 +192,7 @@ sealed class Question {
         final byKey = <String, Object?>{};
         if (crit is Map) {
           for (final e in crit.entries) {
-            byKey[pyStr(e.key).toLowerCase()] = e.value;
+            byKey[pyLowerStr(pyStr(e.key))] = e.value;
           }
           if (!byKey.keys.every((k) => k == 'true' || k == 'false')) {
             final keys = byKey.keys.toList()..sort();

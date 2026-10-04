@@ -10,9 +10,20 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:laya_server/laya_server.dart';
-import 'package:laya_server/src/routing/router.dart';
+import 'package:laya_server/src/engine.dart' show isCheckpointInstalled;
 import 'package:logging/logging.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
+
+/// The engine's ceiling on resident checkpoints.
+const _maxLoadedCeiling = 1 << 30;
+
+/// Writes [message] to stderr, runs [cleanup], flushes stderr and exits 2.
+Future<Never> _fail(String message, {Future<void> Function()? cleanup}) async {
+  stderr.writeln(message);
+  await cleanup?.call();
+  await stderr.flush();
+  exit(2);
+}
 
 Future<void> main() async {
   // Before the config, so its fallback warnings are printed.
@@ -21,24 +32,41 @@ Future<void> main() async {
   try {
     config = ServerConfig.fromEnvironment(Platform.environment);
   } on ArgumentError catch (e) {
-    stderr.writeln(e.message);
-    exit(2);
+    await _fail('${e.message}');
   }
   final log = Logger('laya_server.server');
 
-  // laya `Router.preload` raises the resident cap to hold every checkpoint it
-  // preloads, so a lower LAYA_MAX_LOADED never evicts one of them.
+  // laya-serve preloads every checkpoint when LAYA_MODELS is unset; here that
+  // means every installed one, so `laya_fetch english` then `laya_server`
+  // starts. A checkpoint LAYA_MODELS names must be installed.
   final List<String> preload;
   try {
-    preload = {
-      for (final name
-          in config.preload.isEmpty ? CheckpointSpec.all.keys : config.preload)
-        normaliseCheckpointName(name),
-    }.toList();
+    preload = config.preload.isEmpty
+        ? [
+            for (final name in CheckpointSpec.all.keys)
+              if (isCheckpointInstalled(
+                config.modelDir,
+                name,
+                variant: config.variant,
+              ))
+                name,
+          ]
+        : {
+            for (final name in config.preload) normaliseCheckpointName(name),
+          }.toList();
   } on ArgumentError catch (e) {
-    stderr.writeln('invalid LAYA_MODELS: ${e.message}');
-    exit(2);
+    await _fail('invalid LAYA_MODELS: ${e.message}');
   }
+  if (config.preloadEnabled && preload.isEmpty) {
+    await _fail(
+      'laya_server: cannot start: no checkpoint is installed in '
+      '${config.modelDir}; run: dart run laya_server:laya_fetch english, '
+      'or set LAYA_MODELS',
+    );
+  }
+
+  // laya `Router.preload` raises the resident cap to hold every checkpoint it
+  // preloads, so a lower LAYA_MAX_LOADED never evicts one of them.
   final engine = LayaEngine(
     loader: LayaEngine.fileLoader(
       config.modelDir,
@@ -46,9 +74,12 @@ Future<void> main() async {
       threads: config.threads,
       ortLibraryPath: config.ortLibraryPath,
     ),
-    maxLoaded: config.preloadEnabled
-        ? math.max(config.maxLoaded, preload.length)
-        : config.maxLoaded,
+    maxLoaded: math.min(
+      _maxLoadedCeiling,
+      config.preloadEnabled
+          ? math.max(config.maxLoaded, preload.length)
+          : config.maxLoaded,
+    ),
     defaultModel: config.defaultModel,
     autoTaskDetection: config.autoTask,
   );
@@ -64,12 +95,11 @@ Future<void> main() async {
         ArgumentError(:final message) => '$message',
         _ => '$e',
       };
-      stderr.writeln(
+      await _fail(
         'laya_server: cannot start: '
         '${reason.replaceAll(RegExp(r'\s+'), ' ')}',
+        cleanup: engine.close,
       );
-      await engine.close();
-      exit(2);
     }
   }
 
@@ -82,12 +112,11 @@ Future<void> main() async {
       poweredByHeader: null,
     );
   } on SocketException catch (e) {
-    stderr.writeln(
+    await _fail(
       'laya_server: cannot listen on ${config.host}:${config.port}: '
       '${e.osError?.message ?? e.message}',
+      cleanup: engine.close,
     );
-    await engine.close();
-    exit(2);
   }
   // No dart:io defaults (text/plain, X-Frame-Options, ...): every response
   // sets its own headers, as laya-serve's do. No compression either. Nagle

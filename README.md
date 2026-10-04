@@ -17,14 +17,14 @@ probabilities. Three checkpoints exist: `english`, `multilingual` and
 ```sh
 dart pub global activate laya_server
 
-fetch english          # downloads the pinned checkpoint, about 1.6 GiB
+laya_fetch english     # downloads the pinned checkpoint, about 1.6 GiB
 laya_server            # serves on http://0.0.0.0:8000
 ```
 
-Without a global install, use `dart run laya_server:fetch english` and
+Without a global install, use `dart run laya_server:laya_fetch english` and
 `dart run laya_server` inside a project that depends on the package.
 
-`fetch` verifies every file against a pinned sha256. It takes `--dir` (default
+`laya_fetch` verifies every file against a pinned sha256. It takes `--dir` (default
 `models`), `--variant fp32|fp16` and `--no-verify`, and the names `english`,
 `multilingual`, `typed-decisions` or `all`. It exits 0 on success, 1 on a
 failure and 64 on a usage error. Set `HF_TOKEN` if you need an authenticated
@@ -65,7 +65,7 @@ await engine.close();
 ```
 
 See `example/main.dart`. `createHandler(engine, config)` returns a `shelf`
-handler to mount in your own server.
+handler to mount in your own server, at the root or under a path prefix.
 
 ## Configuration
 
@@ -80,7 +80,7 @@ its own.
 | `LAYA_MODEL_DIR` | `./models` | Where checkpoints are installed (own) |
 | `LAYA_ONNX_VARIANT` | `fp32` | `fp32` or `fp16` weights (own) |
 | `LAYA_ORT_LIB` | unset | Path to an ONNX Runtime library to load instead of the bundled one (own) |
-| `LAYA_MODELS` | all three | Comma-separated checkpoints to preload |
+| `LAYA_MODELS` | every installed one | Comma-separated checkpoints to preload |
 | `LAYA_PRELOAD` | `1` | Load `LAYA_MODELS` at startup; `0` loads on first use |
 | `LAYA_THREADS` | ONNX Runtime default | Intra-op threads |
 | `LAYA_AUTO_TASK` | `0` | Let a typed-decisions question schema select that checkpoint |
@@ -95,12 +95,13 @@ its own.
 Booleans are true for `1`, `true`, `yes` and `on` (any case). Numeric values that
 do not parse fall back to their default, except `LAYA_PORT`,
 `LAYA_DEFAULT_MODEL` and `LAYA_ONNX_VARIANT`, which stop the server with one
-line on stderr and exit code 2. Startup also exits 2 when a preloaded
-checkpoint is not installed.
+line on stderr and exit code 2. Startup also exits 2 when a checkpoint named in
+`LAYA_MODELS` is not installed, or, with `LAYA_MODELS` unset, when none is.
 
-Startup preloads every checkpoint in `LAYA_MODELS` and raises the resident cap
-to hold them, so the default (preload all three, cap 2) evicts nothing. Set
-`LAYA_MODELS=english` to keep memory down.
+Startup preloads every checkpoint in `LAYA_MODELS` (with it unset, every
+checkpoint installed under `LAYA_MODEL_DIR`) and raises the resident cap to
+hold them, so preloading never evicts. Set `LAYA_MODELS=english` to keep memory
+down.
 
 ## API
 
@@ -120,7 +121,7 @@ checkpoint, plus working memory for inference.
 | `typed-decisions` | 1.69 GB (1615 MiB) | 0.85 GB (811 MiB) |
 
 All three at fp32 need about 4.7 GB of disk. fp16 halves that. It is opt-in
-(`fetch --variant fp16` and `LAYA_ONNX_VARIANT=fp16`), as fp32 is the
+(`laya_fetch --variant fp16` and `LAYA_ONNX_VARIANT=fp16`), as fp32 is the
 reference precision.
 
 ## ONNX Runtime
@@ -147,13 +148,20 @@ environment, so it cannot steer the build.
 ## Differences from laya-serve
 
 Same routes, limits, statuses, `{"detail": ...}` texts and byte-for-byte
-response bodies for everything it serves, except:
+response bodies for everything it serves, except as listed below. The answer
+decoding is bit-exact against numpy's AVX2/FMA float32 kernels (x86-64), which
+is what laya-serve runs on such machines; elsewhere numpy's kernels differ and
+a rounded value can differ in its last digit.
 
 - **No batch and no `/v1/models` in v1.** `POST /v1/systemone/batch` and
   `GET /v1/models` are 404.
 - **`device` is always `cpu`.** There is no `LAYA_DEVICE`; ONNX Runtime runs on
   the CPU.
 - **fp16 is opt-in** through `LAYA_ONNX_VARIANT`; fp32 is the default.
+- **`LAYA_MODELS` unset preloads the installed checkpoints only.** laya-serve
+  preloads all three; here a checkpoint that is not installed is skipped, so
+  `laya_fetch english` then `laya_server` starts. A checkpoint `LAYA_MODELS`
+  names must be installed.
 - **Integers beyond int64 decode as doubles.** A `max_len` such as `1e20` written
   as an integer literal is reported as "must be an integer", and such integers
   inside a state serialize differently.

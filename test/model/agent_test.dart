@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:laya_server/src/errors.dart';
 import 'package:laya_server/src/inference/backend.dart';
 import 'package:laya_server/src/inference/batch.dart';
 import 'package:laya_server/src/model/agent.dart';
@@ -8,7 +9,6 @@ import 'package:laya_server/src/model/checkpoint.dart';
 import 'package:laya_server/src/model/confidence.dart';
 import 'package:laya_server/src/model/question.dart';
 import 'package:laya_server/src/model/sequence.dart';
-import 'package:laya_server/src/server/errors.dart';
 import 'package:laya_server/src/tokenizer/tokenizer.dart';
 import 'package:test/test.dart';
 

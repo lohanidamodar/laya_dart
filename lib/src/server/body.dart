@@ -4,7 +4,7 @@ library;
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'errors.dart';
+import '../errors.dart';
 
 /// The deepest nesting of objects and arrays a body may have.
 ///

@@ -442,7 +442,7 @@ No binaries are committed and no system-wide install is needed.
 **Weights**
 
 - Weights are never bundled.
-- A Dart CLI (`dart run laya_server:fetch`) downloads `tokenizer.json` and
+- A Dart CLI (`dart run laya_server:laya_fetch`) downloads `tokenizer.json` and
   `rl_agent_config.json` from HF at a pinned revision, plus our exported ONNX
   from wherever we host it.
 - It also documents running upstream's `export_onnx.py` yourself.
@@ -459,7 +459,7 @@ API tests run with a fake backend and no model.
    - `lib/`, the library: tokenizer, sequence, router, decode, ORT backend,
      shelf handler;
    - `bin/laya_server.dart`, the server executable;
-   - `bin/fetch.dart`;
+   - `bin/laya_fetch.dart`;
    - `example/`.
 
    A later split into `laya` (core) and `laya_server` (HTTP) is possible.

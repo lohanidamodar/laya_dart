@@ -1,5 +1,5 @@
+import 'package:laya_server/src/errors.dart';
 import 'package:laya_server/src/model/question.dart';
-import 'package:laya_server/src/server/errors.dart';
 import 'package:test/test.dart';
 
 Matcher _invalid(String detail) => throwsA(
@@ -186,5 +186,33 @@ void main() {
         'distinct non-empty strings',
       ),
     );
+  });
+
+  test('ids and instructions are stripped as Python strips them', () {
+    // laya: `not qid.strip()`. U+001C is whitespace to Python; U+FEFF is not.
+    expect(
+      () => Question.parse('\x1c', {'type': 'noul', 'instructions': 'i'}),
+      _invalid(r"question id must be a non-empty string, got '\x1c'"),
+    );
+    expect(
+      Question.parse('\u{FEFF}', {'type': 'noul', 'instructions': 'i'}),
+      isA<NoulQuestion>(),
+    );
+    expect(
+      () => Question.parse('q', {'type': 'noul', 'instructions': '\x1d\x1e'}),
+      _invalid(
+        "question 'q': 'instructions' must not be empty; "
+        'add the text the model should answer',
+      ),
+    );
+  });
+
+  test('noul criteria keys are lowered as Python lowers them', () {
+    final q = Question.parse('q', {
+      'type': 'noul',
+      'instructions': 'i',
+      'criteria': {'TRUE': 'yes it is', 'False': 'no'},
+    });
+    expect(q, isA<NoulQuestion>());
   });
 }

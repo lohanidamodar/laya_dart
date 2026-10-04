@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:laya_server/src/routing/py_unicode.dart';
+import 'package:laya_server/src/python/py_unicode.dart';
 import 'package:test/test.dart';
 
 const _sigma = 0x3A3;

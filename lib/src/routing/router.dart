@@ -2,9 +2,10 @@
 library;
 
 import '../model/checkpoint.dart';
-import '../model/render.dart' show pyRepr;
+import '../python/py_round.dart';
+import '../python/py_str.dart';
+import '../python/py_unicode.dart';
 import 'lang.dart';
-import 'py_unicode.dart';
 
 // Aliases people are likely to type (router.py:77).
 const _aliases = {
@@ -58,17 +59,13 @@ const _englishSubtags = {'en', 'eng', 'english'};
 // Codes that name no language, so they answer nothing (router.py:171).
 const _languageAgnosticCodes = {'c', 'posix', 'und', 'zxx', 'mul'};
 
-String _pyLowerStr(String s) => String.fromCharCodes(pyLower(s.runes.toList()));
-
-String _pyStripStr(String s) => String.fromCharCodes(pyStrip(s.runes.toList()));
-
 /// Resolves a checkpoint name or alias, as laya's `normalise_name`: the name
 /// is stripped and lowercased, then looked up among the aliases.
 ///
 /// Throws an [ArgumentError] whose message is laya's `ValueError` message
 /// when the name is neither a checkpoint nor an alias.
 String normaliseCheckpointName(String name) {
-  var key = _pyLowerStr(_pyStripStr(name));
+  var key = pyLowerStr(pyStripStr(name));
   key = _aliases[key] ?? key;
   if (!CheckpointSpec.all.containsKey(key)) {
     throw ArgumentError(unknownCheckpointMessage(name));
@@ -100,21 +97,12 @@ String? _matchWorkflow(Map<String, Object?> questions) {
 /// (laya `_english_from_code`).
 bool? _englishFromCode(String? value) {
   if (value == null) return null;
-  var code = _pyLowerStr(_pyStripStr(value));
+  var code = pyLowerStr(pyStripStr(value));
   if (code.isEmpty) return null;
   code = code.split('.').first;
   final primary = code.replaceAll('_', '-').split('-').first;
   if (primary.isEmpty || _languageAgnosticCodes.contains(primary)) return null;
   return _englishSubtags.contains(primary);
-}
-
-/// Python `'%.0f' % x`: the nearest integer, an exact tie going to even.
-String _percent0f(double x) {
-  final floor = x.floorToDouble();
-  final diff = x - floor; // exact for a finite double
-  var n = floor.toInt();
-  if (diff > 0.5 || (diff == 0.5 && n.isOdd)) n++;
-  return '$n';
 }
 
 /// Which checkpoint answers a request, and why.
@@ -207,7 +195,7 @@ class CheckpointRouter {
       );
     }
     if (task != null) {
-      final typed = _pyLowerStr(task).replaceAll('-', '_') == 'typed_decisions';
+      final typed = pyLowerStr(task).replaceAll('-', '_') == 'typed_decisions';
       return decision(
         normaliseCheckpointName(typed ? 'typed-decisions' : task),
         'explicit task=${pyRepr(task)}',
@@ -247,7 +235,7 @@ class CheckpointRouter {
       key = 'multilingual';
       reason =
           'non-Latin script (${det.script}, '
-          '${_percent0f(100 * det.nonLatinFraction)}% of letters); '
+          '${pyRoundHalfEven(100 * det.nonLatinFraction)}% of letters); '
           'the English checkpoint cannot read it';
     } else if (!det.isEnglish) {
       key = 'multilingual';
@@ -265,7 +253,7 @@ class CheckpointRouter {
       } else {
         reason =
             'Latin script, language not identified but '
-            '${_percent0f(100 * det.diacriticRate)}% non-English letters; '
+            '${pyRoundHalfEven(100 * det.diacriticRate)}% non-English letters; '
             'not safe for the English checkpoint';
       }
     } else if (det.languageUndecided) {

@@ -3,7 +3,7 @@
 /// (`laya/confidence.py`).
 library;
 
-import 'render.dart' show pyRepr;
+import '../python/py_str.dart';
 
 /// A validated `min_confidence`: one threshold for every answer
 /// ([ScalarThreshold]), or one per option-count bucket ([BucketThresholds],

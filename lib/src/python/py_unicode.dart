@@ -188,3 +188,9 @@ List<List<int>> pySplitOn(List<int> s, int sep) {
   out.add(s.sublist(start));
   return out;
 }
+
+/// [pyStrip] of a Dart string: Python's `s.strip()`.
+String pyStripStr(String s) => String.fromCharCodes(pyStrip(s.runes.toList()));
+
+/// [pyLower] of a Dart string: Python's `s.lower()`.
+String pyLowerStr(String s) => String.fromCharCodes(pyLower(s.runes.toList()));

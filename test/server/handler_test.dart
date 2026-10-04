@@ -304,6 +304,79 @@ void main() {
     );
   });
 
+  test('resolveClientModel strips and lowers as laya-serve does', () {
+    // Checked against laya 0.3.24 `serve._resolve_model`: U+001C-U+001F are
+    // whitespace to Python's strip(), U+FEFF is not.
+    expect(
+      resolveClientModel('\x1cconvaiinnovations/laya-multilingual'),
+      'multilingual',
+    );
+    expect(resolveClientModel('\x1cEnglish\x1f'), 'english');
+    expect(resolveClientModel('\u{FEFF}english'), isNull);
+    expect(
+      resolveClientModel('\u{FEFF}convaiinnovations/laya-multilingual'),
+      isNull,
+    );
+  });
+
+  group('mounted under a shelf prefix', () {
+    Future<_Reply> send(
+      Handler inner,
+      String method,
+      String path, {
+      Object? body,
+    }) {
+      // What a router or Cascade mounting the handler at /laya does.
+      Response notFound(Request _) => Response.notFound('outside the mount');
+      FutureOr<Response> mounted(Request r) =>
+          r.url.pathSegments.firstOrNull == 'laya'
+          ? inner(r.change(path: 'laya'))
+          : notFound(r);
+      return _send(mounted, method, path, body: body);
+    }
+
+    final request = utf8.encode(
+      jsonEncode({'state': _state, 'questions': _questions}),
+    );
+
+    test('serves /laya/health and /laya/v1/systemone', () async {
+      final handler = createHandler(_StubEngine(), const ServerConfig());
+      final health = await send(handler, 'GET', '/laya/health');
+      expect(health.status, 200, reason: health.text);
+      expect((health.json! as Map)['status'], 'ok');
+
+      final answer = await send(
+        handler,
+        'POST',
+        '/laya/v1/systemone',
+        body: request,
+      );
+      expect(answer.status, 200, reason: answer.text);
+      expect((answer.json! as Map)['answers'], contains('queue'));
+    });
+
+    test('404s, 405s and redirects below the mount point', () async {
+      final handler = createHandler(_StubEngine(), const ServerConfig());
+      final missing = await send(handler, 'GET', '/laya/nope');
+      expect(missing.status, 404);
+      expect(missing.text, '{"detail":"Not Found"}');
+      final wrongMethod = await send(handler, 'GET', '/laya/v1/systemone');
+      expect(wrongMethod.status, 405);
+      final slash = await send(handler, 'GET', '/laya/health/');
+      expect(slash.status, 307);
+      expect(slash.headers['location'], 'http://testserver/laya/health');
+    });
+
+    test('LAYA_ROOT_PATH is still stripped below the mount point', () async {
+      final handler = createHandler(
+        _StubEngine(),
+        const ServerConfig(rootPath: '/api'),
+      );
+      expect((await send(handler, 'GET', '/laya/api/health')).status, 200);
+      expect((await send(handler, 'GET', '/laya/health')).status, 200);
+    });
+  });
+
   group('over a real engine', skip: tokenizerSkip('english'), () {
     late LayaTokenizer tok;
     setUpAll(
@@ -565,7 +638,7 @@ void main() {
       final e = LayaEngine(
         loader: (name) async => throw StateError(
           'checkpoint $name is not installed in /m; '
-          'run: dart run laya_server:fetch $name',
+          'run: dart run laya_server:laya_fetch $name',
         ),
       );
       addTearDown(e.close);
@@ -577,7 +650,7 @@ void main() {
       expect(r.json, {'detail': 'inference failed'});
       expect(
         logs.singleWhere((l) => l.level == Level.SEVERE).error.toString(),
-        contains('laya_server:fetch english'),
+        contains('laya_server:laya_fetch english'),
       );
     });
 

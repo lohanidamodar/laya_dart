@@ -36,6 +36,9 @@ class _Stats {
   String maxAt = '';
   final nearTies = <String>[];
   int compared = 0;
+
+  /// Cases whose response was compared in full.
+  int cases = 0;
 }
 
 /// Asserts [got] matches the reference [ref] at [path]: equal key sets and
@@ -93,7 +96,7 @@ void main() {
         (!fixture.existsSync()
             ? 'no parity fixture; run dart run tool/parity.dart'
             : !_installed(name)
-            ? 'models/$name is not installed; run dart run laya_server:fetch $name'
+            ? 'models/$name is not installed; run dart run laya_server:laya_fetch $name'
             : null);
     if (skip != null) {
       // Not `skip:`, which the --run-skipped this suite needs would override.
@@ -137,8 +140,17 @@ void main() {
           final text = await resp.readAsString();
           expect(resp.statusCode, c['status'], reason: text);
           _compare(c['json'], jsonDecode(text), r'$', stats);
+          stats.cases++;
         });
       }
+
+      // Runs last: an empty fixture or a run that compared nothing fails
+      // instead of passing vacuously.
+      test('compared at least one case', () {
+        expect(cases, isNotEmpty);
+        expect(stats.cases, greaterThan(0));
+        expect(stats.compared, greaterThan(0));
+      });
     });
   }
 }

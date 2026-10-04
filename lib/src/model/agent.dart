@@ -7,15 +7,15 @@ library;
 
 import 'dart:math' as math;
 
+import '../errors.dart';
 import '../inference/backend.dart';
 import '../inference/batch.dart';
-import '../server/errors.dart';
+import '../python/py_str.dart';
 import '../tokenizer/tokenizer.dart';
 import 'checkpoint.dart';
 import 'confidence.dart';
 import 'decode.dart';
 import 'question.dart';
-import 'render.dart' show pyRepr;
 import 'sequence.dart';
 
 /// The `model` field of every result, as `laya-serve` (the torch `Agent`)

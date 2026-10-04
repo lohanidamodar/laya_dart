@@ -2,7 +2,7 @@
 //
 // Install the checkpoint first (about 1.6 GiB):
 //
-//   dart run laya_server:fetch english
+//   dart run laya_server:laya_fetch english
 //
 // then run `dart run example/main.dart` from the directory holding `models/`.
 import 'dart:convert';
@@ -15,7 +15,7 @@ Future<void> main() async {
   if (!ModelStore(modelDir).isInstalled('english')) {
     stdout.writeln(
       'The english checkpoint is not installed in $modelDir/. '
-      'Fetch it with:\n\n  dart run laya_server:fetch english\n',
+      'Fetch it with:\n\n  dart run laya_server:laya_fetch english\n',
     );
     return;
   }

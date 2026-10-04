@@ -9,13 +9,14 @@ import 'dart:io';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 
+import 'errors.dart';
 import 'inference/ort_backend.dart';
 import 'model/agent.dart';
 import 'model/checkpoint.dart';
 import 'model/confidence.dart';
 import 'model/question.dart';
+import 'python/py_unicode.dart';
 import 'routing/router.dart';
-import 'server/errors.dart';
 import 'tokenizer/tokenizer.dart';
 
 /// Options a request may set: the controls laya's `Router.predict` takes from
@@ -71,8 +72,9 @@ const _publishedModelIds = {
 /// null to auto-route. It never throws.
 String? resolveClientModel(String? model) {
   if (model == null || model.isEmpty) return null;
-  // Python `str.strip().lower()`; the ids it is compared with are ASCII.
-  final published = _publishedModelIds[model.trim().toLowerCase()];
+  // Python `str.strip().lower()`, which differ from Dart's trim and
+  // toLowerCase on U+001C-U+001F, U+FEFF and some case mappings.
+  final published = _publishedModelIds[pyLowerStr(pyStripStr(model))];
   if (published != null) return published;
   try {
     return normaliseCheckpointName(model);
@@ -80,6 +82,42 @@ String? resolveClientModel(String? model) {
     return null;
   }
 }
+
+/// The files [LayaEngine.fileLoader] reads for checkpoint [name] under
+/// [modelDir]: `tokenizer.json`, `config.json`, the ONNX graph for [variant]
+/// and its `_data` sidecar, in that order. Throws [ArgumentError] for a
+/// [variant] other than `fp32` or `fp16`.
+List<String> checkpointFiles(
+  String modelDir,
+  String name, {
+  String variant = 'fp32',
+}) {
+  final model = switch (variant) {
+    'fp32' => 'model.onnx',
+    'fp16' => 'model_fp16.onnx',
+    _ => throw ArgumentError.value(variant, 'variant', 'must be fp32 or fp16'),
+  };
+  final dir = p.join(modelDir, name);
+  final graph = p.join(dir, 'onnx', model);
+  return [
+    p.join(dir, 'tokenizer.json'),
+    p.join(dir, 'config.json'),
+    graph,
+    '${graph}_data',
+  ];
+}
+
+/// Whether every one of [checkpointFiles] exists: the check
+/// [LayaEngine.fileLoader] makes before loading.
+bool isCheckpointInstalled(
+  String modelDir,
+  String name, {
+  String variant = 'fp32',
+}) => checkpointFiles(
+  modelDir,
+  name,
+  variant: variant,
+).every((path) => File(path).existsSync());
 
 /// A checkpoint's place in the residency list.
 class _Slot {
@@ -162,15 +200,7 @@ class LayaEngine {
     int? threads,
     String? ortLibraryPath,
   }) {
-    final model = switch (variant) {
-      'fp32' => 'model.onnx',
-      'fp16' => 'model_fp16.onnx',
-      _ => throw ArgumentError.value(
-        variant,
-        'variant',
-        'must be fp32 or fp16',
-      ),
-    };
+    checkpointFiles(modelDir, 'english', variant: variant); // checks variant
     return (name) async {
       final spec =
           CheckpointSpec.all[name] ??
@@ -179,17 +209,16 @@ class LayaEngine {
             'checkpoint',
             'is not a checkpoint',
           ));
-      final dir = p.join(modelDir, name);
-      final tokenizer = p.join(dir, 'tokenizer.json');
-      final config = p.join(dir, 'config.json');
-      final graph = p.join(dir, 'onnx', model);
-      for (final path in [tokenizer, config, graph, '${graph}_data']) {
-        if (!File(path).existsSync()) {
-          throw StateError(
-            'checkpoint $name is not installed in $modelDir; '
-            'run: dart run laya_server:fetch $name',
-          );
-        }
+      final [tokenizer, config, graph, _] = checkpointFiles(
+        modelDir,
+        name,
+        variant: variant,
+      );
+      if (!isCheckpointInstalled(modelDir, name, variant: variant)) {
+        throw StateError(
+          'checkpoint $name is not installed in $modelDir; '
+          'run: dart run laya_server:laya_fetch $name',
+        );
       }
       final configJson = jsonDecode(await File(config).readAsString());
       if (configJson is! Map<String, Object?>) {

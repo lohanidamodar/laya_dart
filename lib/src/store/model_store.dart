@@ -50,7 +50,10 @@ class ModelStore {
   /// for tests and mirrors. [token] is the Hugging Face token, defaulting to
   /// the `HF_TOKEN` entry of [environment] (default: the process environment); it is sent as a bearer token to the
   /// [hubBase] host only, never to a redirect target on another host. [pins]
-  /// replaces the built-in pinned table, for tests.
+  /// replaces the built-in pinned table, for tests. [idleTimeout] bounds the
+  /// wait for a response's headers and between two chunks of its body; a
+  /// stalled download fails with a [TimeoutException] and keeps its `.part`
+  /// to resume.
   ModelStore(
     this.root, {
     http.Client? client,
@@ -58,6 +61,7 @@ class ModelStore {
     String? token,
     Map<String, String>? environment,
     Map<String, List<PinnedFile>>? pins,
+    this.idleTimeout = const Duration(seconds: 60),
   }) : _client = client,
        hubBase = hubBase ?? Uri.parse('https://huggingface.co'),
        _token =
@@ -71,11 +75,19 @@ class ModelStore {
   /// The hub base URL.
   final Uri hubBase;
 
+  /// How long a download may go without receiving anything.
+  final Duration idleTimeout;
+
   final http.Client? _client;
   final String? _token;
   final Map<String, List<PinnedFile>> _pins;
 
   static String? _nonEmpty(String? s) => s == null || s.isEmpty ? null : s;
+
+  /// [idleTimeout] for a message: whole seconds, else milliseconds.
+  String _idle() => idleTimeout.inMilliseconds % 1000 == 0
+      ? '${idleTimeout.inSeconds} s'
+      : '${idleTimeout.inMilliseconds} ms';
 
   /// Files a checkpoint needs for [variant] (`fp32` or `fp16`).
   ///
@@ -140,7 +152,7 @@ class ModelStore {
   ///
   /// A file already present with its pinned size is skipped without hashing, so
   /// a same-size corrupt file survives (run [verify] to
-  /// catch it; `fetch` does). Each download goes to `<path>.part`, resuming a partial one
+  /// catch it; `laya_fetch` does). Each download goes to `<path>.part`, resuming a partial one
   /// with a `Range` request, and is renamed into place only once its sha256
   /// matches. Throws [StateError] naming the path on a mismatch, after
   /// deleting the bad `.part`; [HttpException] on a failed request.
@@ -237,7 +249,19 @@ class ModelStore {
       mode: have > 0 ? FileMode.append : FileMode.write,
     );
     try {
-      await for (final chunk in response.stream) {
+      final chunks = response.stream.timeout(
+        idleTimeout,
+        onTimeout: (sink) => sink
+          ..addError(
+            TimeoutException(
+              'GET ${f.path} of ${f.repo}: no data for '
+              '${_idle()}; run it again to resume',
+              idleTimeout,
+            ),
+          )
+          ..close(),
+      );
+      await for (final chunk in chunks) {
         sink.add(chunk);
         have += chunk.length;
         onProgress?.call(f.path, have, f.size);
@@ -272,7 +296,15 @@ class ModelStore {
       if (_token != null && _sameOrigin(url, hubBase)) {
         request.headers['Authorization'] = 'Bearer $_token';
       }
-      final response = await client.send(request);
+      final response = await client
+          .send(request)
+          .timeout(
+            idleTimeout,
+            onTimeout: () => throw TimeoutException(
+              'GET $url: no response for ${_idle()}',
+              idleTimeout,
+            ),
+          );
       final location = response.headers['location'];
       if (response.statusCode >= 300 &&
           response.statusCode < 400 &&

@@ -7,6 +7,8 @@ library;
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:meta/meta.dart';
+
 import '../model/question.dart';
 import '../model/sequence.dart';
 
@@ -34,6 +36,9 @@ class InferenceBatch {
   /// padded with 0 and the marker mask with 0 (false) to the most markers in
   /// any row. Throws [ArgumentError] for an empty batch or when [types] does
   /// not have one entry per row.
+  ///
+  /// Internal: `LayaAgent` builds batches; a backend only reads them.
+  @internal
   factory InferenceBatch.collate(
     List<SequenceRow> rows,
     List<QuestionType> types, {

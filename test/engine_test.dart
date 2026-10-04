@@ -379,7 +379,7 @@ void main() {
         (e) => e.message,
         'message',
         'checkpoint $name is not installed in ${dir.path}; '
-            'run: dart run laya_server:fetch $name',
+            'run: dart run laya_server:laya_fetch $name',
       ),
     );
 

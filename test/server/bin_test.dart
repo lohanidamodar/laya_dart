@@ -78,6 +78,8 @@ void main() {
     });
     tearDownAll(() => models.deleteSync(recursive: true));
 
+    // LAYA_MODELS unset, as in the README's quick start: only english is
+    // installed, and it alone is preloaded.
     test('serves a request, then exits on a signal', () async {
       final port = await _freePort();
       final log = StringBuffer();
@@ -85,7 +87,6 @@ void main() {
         'LAYA_HOST': '127.0.0.1',
         'LAYA_PORT': '$port',
         'LAYA_MODEL_DIR': models.path,
-        'LAYA_MODELS': 'english',
         'LAYA_THREADS': '1',
       }, log);
       var exited = false;
@@ -166,9 +167,47 @@ void main() {
         }, log);
         final code = await process.exitCode.timeout(const Duration(minutes: 3));
         expect(code, 2, reason: '$log');
-        expect('$log', contains('dart run laya_server:fetch multilingual'));
+        expect(
+          '$log',
+          contains('dart run laya_server:laya_fetch multilingual'),
+        );
       },
     );
+
+    test(
+      'with LAYA_MODELS unset and nothing installed, startup names the fetch '
+      'command',
+      () async {
+        final empty = Directory.systemTemp.createTempSync('laya_bin_empty_');
+        addTearDown(() => empty.deleteSync(recursive: true));
+        final log = StringBuffer();
+        final process = await _start({
+          'LAYA_PORT': '${await _freePort()}',
+          'LAYA_MODEL_DIR': empty.path,
+        }, log);
+        final code = await process.exitCode.timeout(const Duration(minutes: 3));
+        expect(code, 2, reason: '$log');
+        expect(
+          '$log'.trim(),
+          'laya_server: cannot start: no checkpoint is installed in '
+          '${empty.path}; run: dart run laya_server:laya_fetch english, '
+          'or set LAYA_MODELS',
+        );
+      },
+    );
+
+    test('a LAYA_MAX_LOADED past the engine limit does not crash', () async {
+      final log = StringBuffer();
+      final process = await _start({
+        'LAYA_PORT': '${await _freePort()}',
+        'LAYA_MODEL_DIR': models.path,
+        'LAYA_MODELS': 'multilingual',
+        'LAYA_MAX_LOADED': '9999999999',
+      }, log);
+      final code = await process.exitCode.timeout(const Duration(minutes: 3));
+      expect(code, 2, reason: '$log');
+      expect('$log', contains('dart run laya_server:laya_fetch multilingual'));
+    });
 
     test('a bad LAYA_PORT fails at startup in one line', () async {
       final log = StringBuffer();

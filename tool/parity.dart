@@ -15,7 +15,7 @@
 // With no argument it does both. Logs go to .tooling/logs/. Only english and
 // multilingual are run: typed-decisions' weights are not downloaded.
 //
-// The ONNX models must be installed under models/ (dart run laya_server:fetch).
+// The ONNX models must be installed under models/ (dart run laya_server:laya_fetch).
 import 'dart:convert';
 import 'dart:io';
 

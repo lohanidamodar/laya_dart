@@ -7,12 +7,12 @@
 /// `laya.lang.analyse` field for field and float for float.
 ///
 /// Python `str` indexes code points, so text is handled as code-point lists,
-/// and every character property comes from `py_unicode.dart` (Python 3.12,
+/// and every character property comes from `python/py_unicode.dart` (Python 3.12,
 /// Unicode 15.0.0) rather than Dart's own Unicode data.
 library;
 
-import '../model/decode.dart' show round4;
-import 'py_unicode.dart';
+import '../python/py_round.dart';
+import '../python/py_unicode.dart';
 
 /// `laya.lang.analyse(state)`; [toJson] is the Python dict, key for key.
 class LanguageAnalysis {
@@ -296,16 +296,6 @@ const _space = 0x20;
 const _newline = 0x0A;
 
 String _str(List<int> cps) => String.fromCharCodes(cps);
-
-/// Python's `round(x)` for a float: nearest integer, ties to even.
-int _roundHalfEven(double x) {
-  final floor = x.floorToDouble();
-  final diff = x - floor; // exact for a finite double
-  final f = floor.toInt();
-  if (diff > 0.5) return f + 1;
-  if (diff < 0.5) return f;
-  return f.isEven ? f : f + 1;
-}
 
 // _WORD.findall: maximal runs of `[^\W\d_]`.
 List<String> _words(List<int> t) {
@@ -692,7 +682,7 @@ LanguageAnalysis _analyseText(List<int> text) {
   final prof = _profileFromCounts(counts);
   var script = _scriptFromCounts(counts);
   final nonLatin = prof.isNotEmpty ? round4(1.0 - (prof['latin'] ?? 0.0)) : 0.0;
-  final nNonLatin = _roundHalfEven(nonLatin * _countAlpha(text));
+  final nNonLatin = pyRoundHalfEven(nonLatin * _countAlpha(text));
   if (script == 'latin' &&
       _nonLatinWords(text).isNotEmpty &&
       (nonLatin >= _nonLatinFraction ||

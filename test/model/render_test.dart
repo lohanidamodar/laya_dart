@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:laya_server/src/errors.dart';
 import 'package:laya_server/src/model/question.dart';
 import 'package:laya_server/src/model/render.dart';
-import 'package:laya_server/src/server/errors.dart';
+import 'package:laya_server/src/python/py_str.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -74,5 +75,20 @@ void reprTests() {
       expect(pyRepr(e.key), e.value);
     }
     expect(pyRepr(String.fromCharCode(0xd800)), r"'\ud800'");
+  });
+
+  // Python str.strip(), checked against laya 0.3.24 `_resolve_noul_labels`:
+  // U+001C-U+001F are whitespace to Python (not to Dart's trim), and U+FEFF
+  // is not (Dart's trim strips it).
+  test('noul labels strip as Python does', () {
+    expect(resolveNoulLabels({'false': '\x1cno\x1c', 'true': 'yes\x1f'}), (
+      'no',
+      'yes',
+    ));
+    expect(resolveNoulLabels({'false': '\u{FEFF}', 'true': 'yes'}), (
+      '\u{FEFF}',
+      'yes',
+    ));
+    expect(resolveNoulLabels({'false': '\x1c', 'true': 'yes'}), isNull);
   });
 }

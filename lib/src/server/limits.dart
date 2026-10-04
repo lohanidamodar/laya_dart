@@ -2,11 +2,11 @@
 /// controls' validators and the lone-surrogate walk, with its texts.
 library;
 
+import '../errors.dart';
 import '../json/python_json.dart';
 import '../model/confidence.dart';
-import '../model/render.dart' show pyRepr;
+import '../python/py_str.dart';
 import 'body.dart' show hasUnpairedSurrogate;
-import 'errors.dart';
 
 /// At most this many questions per request (`MAX_QUESTIONS`).
 const maxQuestions = 64;

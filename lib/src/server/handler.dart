@@ -9,12 +9,12 @@ import 'package:logging/logging.dart';
 import 'package:shelf/shelf.dart';
 
 import '../engine.dart';
+import '../errors.dart';
 import '../json/python_json.dart';
 import '../model/checkpoint.dart';
 import '../routing/router.dart' show unknownCheckpointMessage;
 import 'body.dart';
 import 'config.dart';
-import 'errors.dart';
 import 'limits.dart';
 import 'strict.dart';
 
@@ -36,6 +36,9 @@ const _routes = {
 ///   `Retry-After: 1` before reading the body. It then reads the body (at
 ///   most 2 MiB, 413), validates it in laya-serve's order and runs one
 ///   prediction at a time.
+/// - Paths are matched below the shelf mount point (`request.url`), so the
+///   handler also works mounted under a prefix with `Request.change(path:)`,
+///   a `Pipeline` or a router.
 /// - Any other path is 404 `Not Found`, another method on a known path 405
 ///   `Method Not Allowed`, and a known path with its trailing slash toggled
 ///   a 307 redirect, as FastAPI answers them.
@@ -90,8 +93,10 @@ class _Server {
 
   Future<Response> _route(Request request) async {
     // Starlette routes on the percent-decoded path, with the root path
-    // stripped when the request carries it.
-    final path = _unquote(request.requestedUri.path);
+    // stripped when the request carries it. The path is the one below the
+    // shelf mount point: the whole request path when the handler is served
+    // directly, and what follows the prefix when it is mounted under one.
+    final path = _unquote('/${request.url.path}');
     final routePath = _routePath(path);
     final methods = _routes[routePath];
     if (methods != null) {
@@ -112,7 +117,9 @@ class _Server {
       if (_routes.containsKey(_routePath(toggled))) {
         return Response(
           307,
-          headers: {'location': _redirectUrl(request, toggled)},
+          headers: {
+            'location': _redirectUrl(request, '${_mount(request)}$toggled'),
+          },
         );
       }
     }
@@ -357,6 +364,11 @@ String _unquote(String s) {
   }
   return utf8.decode(bytes, allowMalformed: true);
 }
+
+/// The shelf mount point of [request] without its trailing slash: empty
+/// when the handler is served at the root.
+String _mount(Request request) =>
+    request.handlerPath.replaceFirst(RegExp(r'/+$'), '');
 
 /// Starlette's redirect URL for [path]: scheme, the `Host` header, the path
 /// and the raw query, through Python's `quote` with Starlette's safe set.

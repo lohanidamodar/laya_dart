@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -323,6 +324,58 @@ void main() {
     expect(hub.seen.every((r) => r.auth == 'Bearer explicit'), isTrue);
   });
 
+  test('a stalled download times out and keeps its .part', () async {
+    // A raw socket, so nothing buffers: headers and the first ten bytes go
+    // out, then the connection stays open with nothing more.
+    final stalled = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+    final held = <Socket>[];
+    stalled.listen((socket) {
+      held.add(socket);
+      final request = <int>[];
+      socket.listen((data) {
+        request.addAll(data);
+        final text = latin1.decode(request);
+        if (!text.contains('\r\n\r\n')) return;
+        final path = text.split(' ')[1].split('/resolve/$_rev/').last;
+        final body = _contents[path]!;
+        final stall = path == 'onnx/model.onnx_data';
+        socket
+          ..add(
+            latin1.encode(
+              'HTTP/1.1 200 OK\r\ncontent-length: ${body.length}\r\n'
+              'connection: close\r\n\r\n',
+            ),
+          )
+          ..add(stall ? body.sublist(0, 10) : body);
+        if (!stall) unawaited(socket.close());
+      });
+    });
+    addTearDown(() async {
+      for (final s in held) {
+        s.destroy();
+      }
+      await stalled.close();
+    });
+    final s = ModelStore(
+      tmp.path,
+      hubBase: Uri.parse('http://127.0.0.1:${stalled.port}'),
+      environment: const {},
+      pins: _pins,
+      idleTimeout: const Duration(milliseconds: 300),
+    );
+    await expectLater(
+      s.install('english'),
+      throwsA(
+        isA<TimeoutException>().having(
+          (e) => e.message,
+          'message',
+          contains('no data for 300 ms'),
+        ),
+      ),
+    );
+    expect(File('${local('onnx/model.onnx_data')}.part').lengthSync(), 10);
+  }, timeout: const Timeout(Duration(seconds: 30)));
+
   group('fetch command', () {
     Future<(int, String, String)> fetch(List<String> args) async {
       final out = _Sink();
@@ -374,6 +427,12 @@ void main() {
       final (code, _, err) = await fetch(['bogus']);
       expect(code, 64);
       expect(err, contains('english, multilingual, typed-decisions'));
+    });
+
+    test('--help names the laya_fetch executable', () async {
+      final (code, out, _) = await fetch(['--help']);
+      expect(code, 0);
+      expect(out, contains('Usage: dart run laya_server:laya_fetch '));
     });
   });
 

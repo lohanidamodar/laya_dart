@@ -14,7 +14,7 @@ platforms:
   windows:
 executables:
   laya_server: laya_server
-  fetch: fetch
+  laya_fetch: laya_fetch
 dependencies:
   archive: ^4.3.0
   args: ^2.7.0

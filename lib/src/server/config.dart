@@ -3,7 +3,7 @@ library;
 
 import 'package:logging/logging.dart';
 
-import '../model/render.dart' show pyRepr;
+import '../python/py_str.dart';
 import '../routing/router.dart';
 
 final _log = Logger('laya_server.server');
@@ -34,7 +34,6 @@ class ServerConfig {
     this.jevStrict = false,
     this.variant = 'fp32',
     this.ortLibraryPath,
-    this.logLevel = 'info',
   });
 
   /// Reads [env] (usually `Platform.environment`).
@@ -71,7 +70,6 @@ class ServerConfig {
       jevStrict: _bool(env['LAYA_JEV_STRICT'], false),
       variant: variant,
       ortLibraryPath: env['LAYA_ORT_LIB'],
-      logLevel: env['LAYA_LOG_LEVEL'] ?? 'info',
     );
   }
 
@@ -90,7 +88,8 @@ class ServerConfig {
   final String modelDir;
 
   /// `LAYA_MODELS`: the checkpoints (names or aliases) to preload; empty
-  /// means every checkpoint.
+  /// means every installed checkpoint (`bin/laya_server` preloads those it
+  /// finds under [modelDir]).
   final List<String> preload;
 
   /// `LAYA_PRELOAD`: whether to load [preload] at startup (default true).
@@ -131,9 +130,6 @@ class ServerConfig {
 
   /// `LAYA_ORT_LIB`: an explicit ONNX Runtime library path.
   final String? ortLibraryPath;
-
-  /// `LAYA_LOG_LEVEL`: the log level name (default `info`).
-  final String logLevel;
 
   /// laya `_env_bool`: unset is [fallback]; set, only `1`, `true`, `yes`
   /// and `on` (trimmed, any case) are true.
