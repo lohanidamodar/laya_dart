@@ -1,3 +1,6 @@
+// Ports NumPy's simd_exp_FLOAT and simd_log_FLOAT (BSD-3-Clause, Copyright
+// (c) 2005-2025, NumPy Developers), modified for Dart; see NOTICE.
+
 /// Bit-exact float32 arithmetic as numpy does it, for `decodeAnswer`.
 ///
 /// laya decodes the head's float32 output with numpy, and numpy's float32
