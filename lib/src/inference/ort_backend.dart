@@ -152,6 +152,10 @@ class OrtRawBackend {
 
   /// Completes when the worker isolate has exited.
   Future<void> get workerExited => _worker.exited;
+
+  /// Kills the worker isolate without asking it to close, as a crash would.
+  @visibleForTesting
+  void killWorker() => _worker.kill();
 }
 
 // ---------------------------------------------------------------------------
@@ -170,6 +174,7 @@ final class _Worker {
   late final List<String> outputNames;
   var _nextId = 0;
   Future<void>? _closing;
+  late final Isolate _isolate;
 
   /// Why the worker died, when it exited without being asked to.
   OrtException? _death;
@@ -189,7 +194,7 @@ final class _Worker {
     final w = _Worker._();
     w._port.listen(w._onMessage);
     try {
-      await Isolate.spawn(
+      w._isolate = await Isolate.spawn(
         _workerMain,
         _Start(
           w._port.sendPort,
@@ -259,7 +264,6 @@ final class _Worker {
     if (death != null) throw death;
     final id = _nextId++;
     final result = Completer<Map<String, OrtTensorF32>>();
-    _pending[id] = result;
     _commands.send(
       _Run(id, {
         for (final MapEntry(:key, :value) in inputs.entries)
@@ -277,8 +281,14 @@ final class _Worker {
           },
       }),
     );
+    // Only once the send succeeded: a run whose message could not be sent
+    // throws here and leaves no completer for the exit handler to fail.
+    _pending[id] = result;
     return result.future;
   }
+
+  /// Terminates the isolate at once; its exit fails every pending run.
+  void kill() => _isolate.kill(priority: Isolate.immediate);
 
   Future<void> close() => _closing ??= () async {
     if (!_exited.isCompleted) _commands.send(const _Close());

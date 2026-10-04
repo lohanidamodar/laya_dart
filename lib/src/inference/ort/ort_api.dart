@@ -27,8 +27,8 @@ const ortInvalidArgument = 2;
 /// `OrtErrorCode.ORT_NO_SUCHFILE`.
 const ortNoSuchFile = 3;
 
-/// `OrtLoggingLevel.ORT_LOGGING_LEVEL_WARNING`.
-const ortLoggingLevelWarning = 2;
+/// `OrtLoggingLevel.ORT_LOGGING_LEVEL_ERROR`.
+const ortLoggingLevelError = 3;
 
 /// `GraphOptimizationLevel.ORT_ENABLE_ALL`.
 const ortEnableAll = 99;

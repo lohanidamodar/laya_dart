@@ -9,7 +9,11 @@ import 'ort_session.dart';
 
 /// Thrown for any failure reported by ONNX Runtime; [message] is ORT's text.
 ///
-/// Failures to find or load the library itself use [code] `-1`.
+/// `OrtBackend.open` and `LayaEngine.fileLoader`'s loader throw it when a
+/// session cannot be created (a corrupt or mismatched graph, for instance),
+/// and `OrtBackend.run` when a run fails. Failures to find or load the
+/// library itself use [code] `-1`, with a message saying where it looked and
+/// how to point `LAYA_ORT_LIB` at one.
 class OrtException implements Exception {
   /// An exception with ORT's error [code] and [message].
   OrtException(this.code, this.message);
@@ -118,7 +122,9 @@ final class OrtRuntime {
       final out = arena<Pointer<OrtEnv>>();
       check(
         functions.CreateEnv(
-          ortLoggingLevelWarning,
+          // ERROR, not WARNING: ORT writes its warnings (with ANSI colour
+          // codes) straight to stderr, outside the logging package.
+          ortLoggingLevelError,
           'laya'.toNativeUtf8(allocator: arena),
           out,
         ),

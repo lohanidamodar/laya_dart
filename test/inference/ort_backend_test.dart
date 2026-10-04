@@ -106,6 +106,33 @@ void main() {
       },
     );
 
+    test('a killed worker fails pending and later runs, never hangs', () async {
+      final b = await OrtBackend.openRaw(_echo, intraOpThreads: 1);
+      addTearDown(b.close);
+      await b.run(_echoInputs(0));
+      final died = isA<OrtException>().having(
+        (e) => e.message,
+        'message',
+        startsWith('the inference worker exited unexpectedly'),
+      );
+      final pending = [
+        for (var seed = 0; seed < 8; seed++)
+          b
+              .run(_echoInputs(seed))
+              .then<Object>((r) => r, onError: (Object e) => e),
+      ];
+      b.killWorker();
+      final outcomes = await Future.wait(pending).timeout(_startup);
+      // A run the worker answered before the kill landed may succeed; every
+      // other one fails with the death, rather than waiting forever.
+      for (final o in outcomes) {
+        if (o is! Map) expect(o, died);
+      }
+      await b.workerExited.timeout(_startup);
+      await expectLater(b.run(_echoInputs(1)), throwsA(died));
+      await b.close().timeout(_startup);
+    });
+
     test('close shuts the isolate down; later runs throw', () async {
       final b = await OrtBackend.openRaw(_echo, intraOpThreads: 1);
       await b.run(_echoInputs(1));
