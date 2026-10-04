@@ -508,6 +508,13 @@ void main() {
     test('replacement', () {
       rejects((json) => pre(json)['replacement'] = '__', 'replacement');
     });
+
+    test('an unk_token missing from the vocab', () {
+      rejects(
+        (json) => (json['model']! as Map)['unk_token'] = '<nope>',
+        '<nope>',
+      );
+    });
   });
 
   group('multilingual checkpoint', () {

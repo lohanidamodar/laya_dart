@@ -40,7 +40,7 @@ class MetaspaceTokenizer implements LayaTokenizer {
   /// Supports a `Replace` normalizer with a `String` pattern, or a `Sequence` of them, and a
   /// Metaspace pre-tokenizer with a one-character replacement, `prepend_scheme` `always`,
   /// `first` or `never`, and `split`. Throws an [UnsupportedError] naming any other normalizer,
-  /// pattern or option.
+  /// pattern or option, and an `unk_token` that is not in the vocab.
   factory MetaspaceTokenizer(TokenizerSpec spec) {
     final replaces = _replaces(spec.normalizer);
     final pre = spec.preTokenizer;
@@ -78,6 +78,9 @@ class MetaspaceTokenizer implements LayaTokenizer {
     final unk = model['unk_token'];
     if (unk != null && unk is! String) {
       throw UnsupportedError('BPE unk_token "$unk" is not supported');
+    }
+    if (unk != null && !spec.vocab.containsKey(unk)) {
+      throw UnsupportedError('BPE unk_token "$unk" is not in the vocab');
     }
     final byteFallback = flag('byte_fallback');
     final byteTokens = [
